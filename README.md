@@ -183,9 +183,3 @@ All Formula 1 logos and trademarks belong to their respective owners.
 * 📱 Full mobile optimization
 
 ---
-
-## ⭐ Contribute
-
-Feel free to fork, improve, and submit a PR!
-
----
