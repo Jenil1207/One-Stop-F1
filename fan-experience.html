@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fan Zone – F1 Manager</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="F1-logo.png">
+  <style>
+    .fz-header {
+      padding: 120px 5% 60px;
+      text-align: center;
+    }
+
+    .fz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      padding: 0 5% 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .fz-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, background 0.3s;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .fz-card:hover {
+      transform: translateY(-5px);
+      background: #1a1a1a;
+      border-color: rgba(225, 6, 0, 0.4);
+    }
+
+    .fz-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--red);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .fz-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .fz-icon {
+      font-size: 36px;
+      margin-bottom: 20px;
+      color: var(--red);
+    }
+
+    .fz-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .fz-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    #onboardModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .onboard-content {
+      background: #111;
+      border: 1px solid rgba(225, 6, 0, 0.3);
+      padding: 40px;
+      width: 500px;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .driver-sel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 20px 0;
+      max-height: 350px;
+      overflow-y: auto;
+      text-align: left;
+      padding-right: 10px;
+    }
+
+    .driver-sel-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .driver-sel-btn:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .driver-sel-btn.active {
+      background: rgba(225, 6, 0, 0.15);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    .driver-sel-btn.active::after {
+      content: '✓';
+      color: var(--red);
+      font-size: 14px;
+    }
+  </style>
+  <meta name="view-transition" content="same-origin">
+</head>
+
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">
+      <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" class="f1-logo" style="height:22px;width:auto;">
+        <path
+          d="M1367.21 312.501C1379.83 312.501 1390.25 316.71 1398.5 325.168C1406.75 333.626 1410.88 344.001 1410.88 356.334C1410.88 368.667 1406.79 379.043 1398.58 387.418C1390.38 395.793 1380 400.001 1367.38 400.001C1354.75 400.001 1344.25 395.792 1335.92 387.334C1327.54 378.876 1323.38 368.501 1323.38 356.168C1323.38 343.835 1327.54 333.459 1335.83 325.084C1344.13 316.709 1354.59 312.501 1367.21 312.501ZM1167.04 149.792H635.292C501.959 149.792 473.584 160.083 403.667 227.875H403.708L226.292 400H0L281.542 120.583C386.208 17 436.667 4.27469e-06 615.125 0H1320.04L1167.04 149.792ZM1144.21 173.708L1003.96 313.958H641.125C574.625 313.958 559.917 317.083 526.917 350.083L477 400H267.167L422.292 244.875C483.209 184 504.209 173.708 638.5 173.708H1144.21ZM1600 0L1198.92 400H950.875L1350.88 0H1600ZM1367.13 319.376C1356.79 319.376 1348.13 322.96 1341.13 330.126C1334.17 337.293 1330.67 345.96 1330.67 356.168C1330.67 366.376 1334.17 375.042 1341.13 382.209C1348.09 389.376 1356.75 392.959 1367.13 392.959C1377.5 392.959 1386.13 389.418 1393.13 382.293C1400.09 375.168 1403.58 366.501 1403.58 356.251C1403.58 346.001 1400.09 337.293 1393.13 330.126C1386.17 322.959 1377.5 319.376 1367.13 319.376ZM1367.21 332.084C1373.5 332.084 1378.25 333.251 1381.42 335.626C1384.58 337.959 1386.17 341.501 1386.17 346.209C1386.17 350.917 1385.54 354.417 1384.25 356.709C1382.96 359.001 1380.79 360.834 1377.71 362.251L1386.83 380.668H1376.71L1368.42 363.501H1358.63L1358.58 363.459V380.626H1348.96V332.084H1367.21ZM1358.42 355.918H1368.21C1371.21 355.918 1373.38 355.293 1374.67 354.001C1376 352.709 1376.67 350.626 1376.67 347.751C1376.67 342.293 1373.25 339.584 1366.38 339.584H1358.42V355.918Z"
+          fill="#E10600" />
+      </svg>
+    </div>
+    <ul class="nav-links">
+      <li onclick="window.location.href='regulations.html'">2026 Rules</li>
+      <li onclick="window.location.href='news.html'">News</li>
+      <li onclick="window.location.href='schedule.html'">Schedule</li>
+      <li onclick="window.location.href='drivers.html'">Drivers</li>
+      <li class="has-mega" onclick="goToAllTeams()">Teams &#9662;</li>
+      <li onclick="window.location.href='circuits.html'">Circuits</li>
+      <li onclick="window.location.href='media.html'">Media</li>
+      <li onclick="window.location.href='contact.html'">Contact</li>
+      <li class="active">Fan Zone</li>
+      <li class="nav-auth-btn" id="navLoginBtn" onclick="window.location.href='auth.html'"
+        style="background:var(--red);color:#fff;padding:6px 16px;margin-left:14px;font-weight:700;transition:all 0.2s;">
+        Sign In</li>
+    </ul>
+  </nav>
+
+  <div class="mega-wrapper" id="megaWrapper">
+    <div class="mega-menu">
+      <div class="mega-menu-inner">
+        <div class="teams-grid" id="megaTeamsGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="authGate" style="display:none; text-align:center; padding: 200px 20px; min-height:100vh;">
+    <h1 style="font-family:'Orbitron',sans-serif; color:var(--red); text-transform:uppercase;">Access Denied</h1>
+    <p style="color:var(--muted); margin: 20px 0;">You must be signed in to access the exclusive Fan Zone.</p>
+    <button class="btn-primary" onclick="window.location.href='auth.html'">Sign In Here</button>
+  </div>
+
+  <div id="fzContent" style="display:none; min-height:100vh;">
+    <header class="fz-header">
+      <div class="hero-badge reveal-up" style="margin: 0 auto 20px;">Exclusive Features</div>
+      <h1 class="reveal-up" style="font-family:'Orbitron'; font-size:42px; text-transform:uppercase;">Fan <span
+          style="color:var(--red);">Experience</span></h1>
+      <p class="reveal-up" style="color:var(--muted); max-width:600px; margin:20px auto 0;">Welcome back, <span
+          id="fzIndexName" style="color:#fff; font-weight:bold;">Fan</span>! Dive into the exclusive community features
+        tailored just for you and your favourite drivers.</p>
+    </header>
+
+    <div class="fz-grid reveal-up">
+      <div class="fz-card" onclick="openFantasyModal()">
+        <div class="fz-icon">🏆</div>
+        <div class="fz-title">Fantasy Team Picker</div>
+        <div class="fz-desc">Build your ultimate 2026 dream team. Manage your budget of $30M, pick two drivers and a
+          team.</div>
+      </div>
+      <div class="fz-card" onclick="openTriviaModal()">
+        <div class="fz-icon">🧠</div>
+        <div class="fz-title">Which 2026 Driver Are You?</div>
+        <div class="fz-desc">Discover your perfect 2026 Formula 1 driver match based on your racing style and
+          personality.</div>
+      </div>
+      <div class="fz-card" onclick="window.location.href='compare.html'">
+        <div class="fz-icon">⚖️</div>
+        <div class="fz-title">Advanced Comparison</div>
+        <div class="fz-desc">Access Head-to-Head Radar Charts and dive deep into the telemetry stats of any two drivers
+          on the grid.</div>
+      </div>
+      <div class="fz-card" onclick="alert('Event Calendar .ics download coming soon!')">
+        <div class="fz-icon">📅</div>
+        <div class="fz-title">Event Calendar Sync</div>
+        <div class="fz-desc">Sync full Grand Prix weekends directly to your personal Apple, Google, or Outlook calendars
+          via .ics.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fantasyModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; overflow-y:auto; padding:40px 20px;">
+    <div
+      style="background:#111; border:1px solid rgba(225,6,0,0.4); max-width:800px; margin:0 auto; padding:40px; position:relative;">
+      <button onclick="document.getElementById('fantasyModal').style.display='none'"
+        style="position:absolute; top:20px; right:20px; background:none; border:none; color:#888; font-size:24px; cursor:pointer; z-index:20;">&times;</button>
+
+      <div id="fantasyBuilderView">
+        <h2 style="font-family:'Orbitron'; color:var(--red); text-transform:uppercase; margin-bottom:15px;">F1 2026
+          Fantasy Picker</h2>
+        <div
+          style="position: sticky; top: -40px; background: #111; z-index: 10; padding: 15px 0; border-bottom: 1px solid #333; margin-bottom: 20px;">
+          <p id="fantasyBudgetDisplay" style="color:var(--muted); margin:0; font-size:18px; font-weight:bold;">Remaining
+            Budget: $30.0M <span style="font-size:12px;">(Cap: $30M)</span></p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+          <div>
+            <h3
+              style="font-family:'Orbitron'; color:#fff; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; font-size:16px;">
+              1. Select 2 Drivers</h3>
+            <div id="fantasyDriversGrid"
+              style="display:grid; grid-template-columns:1fr; gap:8px; max-height:400px; overflow-y:auto; padding-right:10px;">
+            </div>
+          </div>
+          <div>
+            <h3
+              style="font-family:'Orbitron'; color:#fff; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; font-size:16px;">
+              2. Select 1 Team</h3>
+            <div id="fantasyTeamsGrid"
+              style="display:grid; grid-template-columns:1fr; gap:8px; max-height:400px; overflow-y:auto; padding-right:10px;">
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#1a1a1a; padding:20px; border-radius:6px; margin-bottom:20px;">
+          <h4 style="font-family:'Orbitron'; margin-bottom:10px;">Your Selection:</h4>
+          <div id="fantasySelectionList" style="color:var(--muted); min-height:60px; font-size:14px;">Select 2 drivers
+            and 1 team to see your lineup here.</div>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="text" id="fantasyTeamName" placeholder="Name your Fantasy Team..."
+            style="flex:1; background:#000; border:1px solid #333; color:#fff; font-family:'Inter'; padding:14px; font-size:14px; outline:none;" />
+          <button id="fantasySaveBtn" class="btn-primary" onclick="submitFantasyTeam()"
+            style="padding:14px 30px; opacity:0.5; pointer-events:none;">Lock Lineup</button>
+        </div>
+        <div id="fantasyMessage" style="color:var(--red); margin-top:10px; font-size:13px; display:none;"></div>
+      </div>
+
+      <div id="fantasyDashboardView" style="display:none; text-align:left;">
+        <h2 style="font-family:'Orbitron'; color:var(--red); text-transform:uppercase; margin-bottom:5px;">Fantasy
+          Dashboard</h2>
+        <div id="fdTeamName"
+          style="color:#fff; font-size:28px; font-family:'Orbitron'; font-weight:bold; margin-bottom:30px;">Your Team
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:10px;">
+          <div style="background:var(--surface); border:1px solid #333; padding:25px; border-radius:8px;">
+            <h3
+              style="font-family:'Orbitron'; color:var(--red); border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; font-size:16px;">
+              Active Roster</h3>
+            <div id="fdRosterDisplay" style="display:flex; flex-direction:column; gap:15px;"></div>
+            <div
+              style="margin-top:20px; padding-top:15px; border-top:1px solid rgba(225,6,0,0.3); font-family:'Orbitron'; font-size:20px; font-weight:bold; color:#fff; display:flex; justify-content:space-between;">
+              <span>TOTAL POINTS</span> <span id="fdTotalPts" style="color:var(--red);">0</span>
+            </div>
+          </div>
+
+          <div style="background:var(--surface); border:1px solid #333; padding:25px; border-radius:8px;">
+            <h3
+              style="font-family:'Orbitron'; color:var(--red); border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; font-size:16px;">
+              Global Top 5</h3>
+            <div id="fdLeaderboard" style="display:flex; flex-direction:column; gap:12px;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="triviaModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; overflow-y:auto; padding:40px 20px;">
+    <div
+      style="background:#111; border:1px solid rgba(225,6,0,0.4); max-width:600px; margin:0 auto; padding:40px; position:relative; text-align:center;">
+      <button onclick="closeTrivia()"
+        style="position:absolute; top:20px; right:20px; background:none; border:none; color:#888; font-size:24px; cursor:pointer;">&times;</button>
+
+      <div id="triviaWelcome">
+        <h2
+          style="font-family:'Orbitron'; color:var(--red); text-transform:uppercase; margin-bottom:15px; font-size:32px;">
+          Which 2026 Driver Are You?</h2>
+        <p style="color:var(--muted); line-height:1.6; margin-bottom:30px;">Answer 5 high-speed personality questions to
+          discover your 2026 grid counterpart!</p>
+        <button class="btn-primary" onclick="startTrivia()">Start Engine!</button>
+      </div>
+
+      <div id="triviaGame" style="display:none; text-align:left;">
+        <div
+          style="display:flex; justify-content:space-between; color:var(--muted); font-size:12px; font-family:'Orbitron'; margin-bottom:20px;">
+          <span id="triviaProgress">Question 1/10</span>
+          <span id="triviaScoreDisplay">Score: 0</span>
+        </div>
+        <h3 id="triviaQuestion"
+          style="font-family:'Inter'; font-size:18px; line-height:1.5; margin-bottom:25px; min-height:60px;"></h3>
+        <div id="triviaOptions" style="display:grid; gap:10px;"></div>
+      </div>
+
+      <div id="triviaResult" style="display:none;">
+        <div id="triviaScoreCard"
+          style="background:linear-gradient(135deg, #111, #222); border:2px solid var(--red); padding:40px; border-radius:12px; position:relative; overflow:hidden; margin-bottom:30px;">
+          <div
+            style="position:absolute; top:-20px; right:-20px; font-size:150px; opacity:0.03; font-family:'Orbitron'; font-weight:900;">
+            F1</div>
+          <h2 style="font-family:'Orbitron'; color:#fff; text-transform:uppercase; margin-bottom:10px;"
+            id="triviaCardName">Your Name</h2>
+          <div
+            style="color:var(--red); font-family:'Orbitron'; font-size:12px; letter-spacing:2px; margin-bottom:30px;">
+            MASTERY STATUS</div>
+          <div style="font-family:'Orbitron'; font-size:64px; font-weight:800; color:#fff;" id="triviaFinalScore">0/10
+          </div>
+          <div style="color:var(--muted); margin-top:10px;" id="triviaRankTitle">Rookie</div>
+        </div>
+        <button class="btn-primary" onclick="closeTrivia()">Back to Fan Zone</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="onboardModal"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+    <div class="onboard-content"
+      style="background: #111; padding: 40px; border-radius: 12px; border: 1px solid var(--red); max-width: 600px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+      <h2 style="font-family:'Orbitron'; color:var(--red); text-transform:uppercase; margin-bottom:10px;">Select Your
+        Drivers</h2>
+      <p style="font-size:13px; color:#888;">As a new fan, pick up to 2 drivers you want to support this season for
+        personalised stats!</p>
+      <div class="driver-sel-grid" id="driverSelGrid"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 20px 0; max-height: 50vh; overflow-y: auto; padding-right: 10px;">
+      </div>
+      <button class="btn-primary" onclick="saveDrivers()" style="width:100%; margin-top:10px;">Save & Enter Fan
+        Zone</button>
+    </div>
+  </div>
+  <footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" class="f1-logo">
+        <path d="M1367.21 312.501C1379.83 312.501 1390.25 316.71 1398.5 325.168C1406.75 333.626 1410.88 344.001 1410.88 356.334C1410.88 368.667 1406.79 379.043 1398.58 387.418C1390.38 395.793 1380 400.001 1367.38 400.001C1354.75 400.001 1344.25 395.792 1335.92 387.334C1327.54 378.876 1323.38 368.501 1323.38 356.168C1323.38 343.835 1327.54 333.459 1335.83 325.084C1344.13 316.709 1354.59 312.501 1367.21 312.501ZM1167.04 149.792H635.292C501.959 149.792 473.584 160.083 403.667 227.875H403.708L226.292 400H0L281.542 120.583C386.208 17 436.667 4.27469e-06 615.125 0H1320.04L1167.04 149.792ZM1144.21 173.708L1003.96 313.958H641.125C574.625 313.958 559.917 317.083 526.917 350.083L477 400H267.167L422.292 244.875C483.209 184 504.209 173.708 638.5 173.708H1144.21ZM1600 0L1198.92 400H950.875L1350.88 0H1600ZM1367.13 319.376C1356.79 319.376 1348.13 322.96 1341.13 330.126C1334.17 337.293 1330.67 345.96 1330.67 356.168C1330.67 366.376 1334.17 375.042 1341.13 382.209C1348.09 389.376 1356.75 392.959 1367.13 392.959C1377.5 392.959 1386.13 389.418 1393.13 382.293C1400.09 375.168 1403.58 366.501 1403.58 356.251C1403.58 346.001 1400.09 337.293 1393.13 330.126C1386.17 322.959 1377.5 319.376 1367.13 319.376ZM1367.21 332.084C1373.5 332.084 1378.25 333.251 1381.42 335.626C1384.58 337.959 1386.17 341.501 1386.17 346.209C1386.17 350.917 1385.54 354.417 1384.25 356.709C1382.96 359.001 1380.79 360.834 1377.71 362.251L1386.83 380.668H1376.71L1368.42 363.501H1358.63L1358.58 363.459V380.626H1348.96V332.084H1367.21ZM1358.42 355.918H1368.21C1371.21 355.918 1373.38 355.293 1374.67 354.001C1376 352.709 1376.67 350.626 1376.67 347.751C1376.67 342.293 1373.25 339.584 1366.38 339.584H1358.42V355.918Z" fill="#E10600"/>
+      </svg>
+      <p>The official source for Formula 1 teams, drivers, and the 2026 season.</p>
+    </div>
+    <div class="footer-col"><h4>Racing</h4><ul><li onclick="window.location.href='schedule.html'">Schedule</li><li><a href="https://www.formula1.com/en/results/2026/races" target ="_blank">Race Results</a></li><li onclick="window.location.href='teams.html'">Standings</li></ul></div>
+    <div class="footer-col"><h4>Content</h4><ul><li onclick="window.location.href='news.html'">Latest News</li><li onclick="window.location.href='teams.html'">Teams</li><li onclick="window.location.href='drivers.html'">Drivers</li></ul></div>
+    <div class="footer-col"><h4>About</h4><ul><li><a href="https://www.formula1.com" target ="_blank">Formula 1</a></li><li><a href="https://www.fia.com" target="_blank">FIA</a></li><li onclick="window.location.href='teams.html'">Regulations</li><li onclick="window.location.href='contact.html'" style="cursor:pointer;">Contact</li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Formula One World Championship Limited. All rights reserved.</p>
+    <div class="footer-social"><a title="Twitter">𝕏</a><a title="Instagram">&#127760;</a><a title="YouTube">&#9654;</a></div>
+  </div>
+</footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/script.js"></script>
+  <script>
+    let currentUser = null;
+    let selectedDrivers = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        currentUser = JSON.parse(localStorage.getItem('f1_user'));
+      } catch (e) { }
+
+      if (!currentUser) {
+        document.getElementById('authGate').style.display = 'block';
+        setTimeout(() => { window.location.href = 'auth.html'; }, 3000);
+      } else {
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('fzContent').style.display = 'block';
+        document.getElementById('fzIndexName').textContent = currentUser.name.split(' ')[0];
+
+        if (!currentUser.drivers || currentUser.drivers.length === 0) {
+          showOnboarding();
+        }
+
+        if (typeof initScrollObserver === 'function') {
+          initScrollObserver();
+        }
+      }
+    });
+
+    function showOnboarding() {
+      document.getElementById('onboardModal').style.display = 'flex';
+      const grid = document.getElementById('driverSelGrid');
+      grid.innerHTML = '';
+
+      const sortedDrivers = [...driversData].sort((a, b) => a.name.localeCompare(b.name));
+
+      sortedDrivers.forEach(d => {
+        const btn = document.createElement('button');
+        btn.className = 'driver-sel-btn';
+        btn.textContent = d.name;
+        btn.onclick = () => {
+          if (btn.classList.contains('active')) {
+            btn.classList.remove('active');
+            selectedDrivers = selectedDrivers.filter(x => x !== d.name);
+          } else {
+            if (selectedDrivers.length >= 2) return alert('You can only pick 2 favorite drivers.');
+            btn.classList.add('active');
+            selectedDrivers.push(d.name);
+          }
+        };
+        grid.appendChild(btn);
+      });
+    }
+
+    let fBudget = 30.0;
+    let fDrivers = [];
+    let fConstructors = [];
+
+    const costMap = {
+      'Max Verstappen': 14.0, 'Lewis Hamilton': 13.5, 'Charles Leclerc': 12.0, 'Lando Norris': 11.5,
+      'George Russell': 10.0, 'Fernando Alonso': 9.5, 'Oscar Piastri': 9.0, 'Carlos Sainz': 8.5,
+      'Alexander Albon': 7.0, 'Pierre Gasly': 6.5, 'Esteban Ocon': 6.5, 'Yuki Tsunoda': 6.0,
+      'Nico Hulkenberg': 5.5, 'Lance Stroll': 5.0, 'Kevin Magnussen': 4.5, 'Valtteri Bottas': 4.0,
+      'Guanyu Zhou': 3.5, 'Logan Sargeant': 3.0, 'Daniel Ricciardo': 6.5, 'Liam Lawson': 4.0, 'Oliver Bearman': 3.5, 'Kimi Antonelli': 3.5,
+      'Red Bull Racing': 12.0, 'Ferrari': 11.5, 'Mercedes': 11.0, 'McLaren': 10.5, 'Aston Martin': 8.0,
+      'Alpine': 6.0, 'RB': 5.5, 'Haas F1 Team': 4.5, 'Williams': 4.0, 'Kick Sauber': 3.5
+    };
+
+    async function openFantasyModal() {
+      document.getElementById('fantasyModal').style.display = 'block';
+      if (!currentUser) return;
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/fantasy/${currentUser.firebase_uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('fantasyBuilderView').style.display = 'none';
+          document.getElementById('fantasyDashboardView').style.display = 'block';
+          renderFantasyDashboard(data);
+        } else {
+          document.getElementById('fantasyBuilderView').style.display = 'block';
+          document.getElementById('fantasyDashboardView').style.display = 'none';
+          renderFantasyOptions();
+          updateFantasyUI();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function getF1Pts(name) {
+      let dr = driversData.find(d => d.name === name);
+      if (dr) return parseInt(dr.points);
+      let cr = Object.values(teamsData).find(t => t.name === name);
+      if (cr) return parseInt(cr.points) || 120;
+      return 0;
+    }
+
+    async function renderFantasyDashboard(myTeam) {
+      document.getElementById('fdTeamName').textContent = myTeam.team_name;
+      const rd = document.getElementById('fdRosterDisplay');
+
+      let p1 = getF1Pts(myTeam.driver1);
+      let p2 = getF1Pts(myTeam.driver2);
+      let pc = getF1Pts(myTeam.constructor);
+
+      rd.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:10px; border-radius:4px;">
+             <span style="color:#aaa;">🏎️ ${myTeam.driver1}</span> <span style="font-family:'Orbitron'; font-weight:bold;">${p1} pts</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:10px; border-radius:4px;">
+             <span style="color:#aaa;">🏎️ ${myTeam.driver2}</span> <span style="font-family:'Orbitron'; font-weight:bold;">${p2} pts</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:10px; border-radius:4px;">
+             <span style="color:#aaa;">🛡️ ${myTeam.constructor}</span> <span style="font-family:'Orbitron'; font-weight:bold;">${pc} pts</span>
+          </div>
+       `;
+      document.getElementById('fdTotalPts').textContent = myTeam.total_points || (p1 + p2 + pc);
+
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/fantasy/leaderboard');
+        const data = await res.json();
+        if (data.status === 'success') {
+          let lhtml = '';
+          data.leaderboard.forEach((t, i) => {
+            const isMe = t.firebase_uid === currentUser.firebase_uid;
+            const ownerFirstName = (t.display_name || "Unknown").split(' ')[0];
+            lhtml += `
+                  <div title="Driver 1: ${t.driver1}\nDriver 2: ${t.driver2}\nTeam: ${t.constructor}" style="cursor:help; display:flex; justify-content:space-between; align-items:center; background:${isMe ? 'rgba(225,6,0,0.2)' : '#111'}; border:1px solid ${isMe ? 'var(--red)' : '#222'}; padding:10px; border-radius:4px; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='${isMe ? 'var(--red)' : '#222'}'">
+                     <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-family:'Orbitron'; font-weight:bold; color:var(--muted);">${i + 1}</span>
+                        <span style="color:#fff; font-size:14px;">${ownerFirstName} (${t.team_name})</span>
+                     </div>
+                     <span style="font-family:'Orbitron'; font-weight:bold; color:var(--red);">${t.total_points || 0}</span>
+                  </div>
+                `;
+          });
+          document.getElementById('fdLeaderboard').innerHTML = lhtml || '<div style="color:#888;">No teams yet.</div>';
+        }
+      } catch (e) { console.error('Leaderboard error', e); }
+    }
+    function renderFantasyOptions() {
+      const dGrid = document.getElementById('fantasyDriversGrid');
+      const tGrid = document.getElementById('fantasyTeamsGrid');
+      dGrid.innerHTML = ''; tGrid.innerHTML = '';
+
+      const sDrivers = [...driversData].sort((a, b) => (costMap[b.name] || 5) - (costMap[a.name] || 5));
+      sDrivers.forEach(d => {
+        const cost = costMap[d.name] || 5.0;
+        const btn = document.createElement('button');
+        btn.className = 'driver-sel-btn';
+        btn.innerHTML = `<span>${d.name}</span><span style="color:var(--red);">\$${cost.toFixed(1)}M</span>`;
+        if (fDrivers.includes(d.name)) btn.classList.add('active');
+        btn.onclick = () => {
+          if (fDrivers.includes(d.name)) {
+            fDrivers = fDrivers.filter(x => x !== d.name);
+          } else {
+            if (fDrivers.length >= 2) {
+              fDrivers.shift(); 
+            }
+            fDrivers.push(d.name);
+          }
+          renderFantasyOptions(); updateFantasyUI();
+        };
+        dGrid.appendChild(btn);
+      });
+
+      const sTeams = [...teamsData].sort((a, b) => (costMap[b.name] || 5) - (costMap[a.name] || 5));
+      sTeams.forEach(t => {
+        const cost = costMap[t.name] || 5.0;
+        const btn = document.createElement('button');
+        btn.className = 'driver-sel-btn';
+        btn.innerHTML = `<span>${t.name}</span><span style="color:var(--red);">\$${cost.toFixed(1)}M</span>`;
+        if (fConstructors.includes(t.name)) btn.classList.add('active');
+        btn.onclick = () => {
+          if (fConstructors.includes(t.name)) {
+            fConstructors = [];
+          } else {
+            fConstructors = [t.name];
+          }
+          renderFantasyOptions(); updateFantasyUI();
+        };
+        tGrid.appendChild(btn);
+      });
+    }
+
+    function updateFantasyUI() {
+      let spent = 0;
+      fDrivers.forEach(n => spent += (costMap[n] || 5));
+      fConstructors.forEach(n => spent += (costMap[n] || 5));
+
+      const rem = 30.0 - spent;
+      const disp = document.getElementById('fantasyBudgetDisplay');
+      disp.innerHTML = `Remaining Budget: <span style="color:${rem < 0 ? 'var(--red)' : '#fff'}">\$${rem.toFixed(1)}M</span> <span style="font-size:12px;">(Cap: $30M)</span>`;
+
+      let html = '';
+      fDrivers.forEach(d => html += `<div style="padding:4px 0;">🏎️ ${d}</div>`);
+      fConstructors.forEach(c => html += `<div style="padding:4px 0;">🛡️ ${c}</div>`);
+
+      if (!html) html = 'Select 2 drivers and 1 team to see your lineup here.';
+      document.getElementById('fantasySelectionList').innerHTML = html;
+
+      const btn = document.getElementById('fantasySaveBtn');
+      const canSave = (fDrivers.length === 2 && fConstructors.length === 1 && rem >= 0 && document.getElementById('fantasyTeamName').value.trim() !== '');
+
+      if (canSave) {
+        btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+      } else {
+        btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none';
+      }
+    }
+
+    document.getElementById('fantasyTeamName').addEventListener('input', updateFantasyUI);
+
+    function submitFantasyTeam() {
+      const tName = document.getElementById('fantasyTeamName').value.trim();
+      let spent = 0;
+      fDrivers.forEach(n => spent += (costMap[n] || 5));
+      fConstructors.forEach(n => spent += (costMap[n] || 5));
+
+      let totP = getF1Pts(fDrivers[0]) + getF1Pts(fDrivers[1]) + getF1Pts(fConstructors[0]);
+      const payload = {
+        firebase_uid: currentUser.firebase_uid,
+        team_name: tName,
+        constructor: fConstructors[0],
+        driver1: fDrivers[0],
+        driver2: fDrivers[1],
+        budget_spent: Math.round(spent * 10),
+        total_points: totP
+      };
+
+      const btn = document.getElementById('fantasySaveBtn');
+      btn.textContent = 'Saving...';
+
+      fetch('http://127.0.0.1:8000/api/fantasy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(r => r.json()).then(res => {
+        btn.textContent = 'Locked ✓';
+        document.getElementById('fantasyMessage').style.display = 'block';
+        document.getElementById('fantasyMessage').style.color = '#22c55e';
+        document.getElementById('fantasyMessage').textContent = 'Fantasy team saved successfully!';
+        setTimeout(() => { document.getElementById('fantasyModal').style.display = 'none'; btn.textContent = 'Lock Lineup'; }, 2000);
+      }).catch(e => {
+        document.getElementById('fantasyMessage').style.display = 'block';
+        document.getElementById('fantasyMessage').textContent = 'Failed to save to SQL Backend.';
+        btn.textContent = 'Lock Lineup';
+      });
+    }
+
+    const quizQ = [
+      {
+        q: "You are stuck behind a slower car. What is your strategy?", opts: [
+          { text: "Divebomb down the inside!", mapping: ["Max Verstappen", "Fernando Alonso"] },
+          { text: "Wait patiently for a DRS zone.", mapping: ["George Russell", "Alexander Albon"] },
+          { text: "Complain on the radio.", mapping: ["Yuki Tsunoda", "Lance Stroll"] },
+          { text: "Undercut them in the pits.", mapping: ["Carlos Sainz", "Charles Leclerc"] }
+        ]
+      },
+      {
+        q: "It starts pouring rain. What do you do?", opts: [
+          { text: "Stay out on slicks, I got this.", mapping: ["Lando Norris", "Charles Leclerc"] },
+          { text: "Box immediately for full wets.", mapping: ["Lewis Hamilton", "Fernando Alonso"] },
+          { text: "Follow whatever the team says.", mapping: ["Oscar Piastri", "Esteban Ocon"] },
+          { text: "Find the grippiest unusual racing line.", mapping: ["Max Verstappen", "Lewis Hamilton"] }
+        ]
+      },
+      {
+        q: "What is your main priority on a race weekend?", opts: [
+          { text: "Maximum raw speed in Qualifying.", mapping: ["Charles Leclerc", "Lando Norris"] },
+          { text: "Perfecting the race pace setup.", mapping: ["Max Verstappen", "Carlos Sainz"] },
+          { text: "Securing a reliable points finish.", mapping: ["Alexander Albon", "Nico Hulkenberg"] },
+          { text: "Putting on a show for the fans.", mapping: ["Daniel Ricciardo", "Lewis Hamilton"] }
+        ]
+      },
+      {
+        q: "Your teammate is faster than you. 10 laps to go.", opts: [
+          { text: "Radio: 'Tell him to stay behind.'", mapping: ["Fernando Alonso", "Max Verstappen"] },
+          { text: "Let him past to help the team.", mapping: ["Valtteri Bottas", "Oscar Piastri"] },
+          { text: "Defend like a lion!", mapping: ["Kevin Magnussen", "Sergio Perez"] },
+          { text: "Find magical pace out of nowhere.", mapping: ["Lewis Hamilton", "Lando Norris"] }
+        ]
+      },
+      {
+        q: "Choose your racing soundtrack:", opts: [
+          { text: "High energy EDM/Techno.", mapping: ["Max Verstappen", "Lando Norris"] },
+          { text: "Classic Rock / Heavy Metal.", mapping: ["Fernando Alonso", "Kevin Magnussen"] },
+          { text: "Smooth R&B / Hip-Hop.", mapping: ["Lewis Hamilton", "Charles Leclerc"] },
+          { text: "Podcast / Silence.", mapping: ["George Russell", "Valtteri Bottas"] }
+        ]
+      }
+    ];
+
+    let qIndex = 0;
+    let selections = [];
+
+    function openTriviaModal() {
+      document.getElementById('triviaModal').style.display = 'block';
+      document.getElementById('triviaWelcome').style.display = 'block';
+      document.getElementById('triviaGame').style.display = 'none';
+      document.getElementById('triviaResult').style.display = 'none';
+      qIndex = 0; selections = [];
+    }
+    function closeTrivia() { document.getElementById('triviaModal').style.display = 'none'; }
+    function startTrivia() {
+      document.getElementById('triviaWelcome').style.display = 'none';
+      document.getElementById('triviaGame').style.display = 'block';
+      showTriviaQ();
+    }
+    function showTriviaQ() {
+      if (qIndex >= quizQ.length) return generateDriverCard();
+
+      const q = quizQ[qIndex];
+      document.getElementById('triviaProgress').textContent = `Question ${qIndex + 1}/${quizQ.length}`;
+      document.getElementById('triviaScoreDisplay').textContent = '';
+      document.getElementById('triviaQuestion').textContent = q.q;
+
+      const optsDiv = document.getElementById('triviaOptions');
+      optsDiv.innerHTML = '';
+
+      q.opts.forEach((opt) => {
+        const b = document.createElement('button');
+        b.className = 'driver-sel-btn';
+        b.textContent = opt.text;
+        b.onclick = () => {
+          b.style.background = 'rgba(225,6,0,0.2)';
+          b.style.borderColor = 'var(--red)';
+          selections.push(...opt.mapping);
+          Array.from(optsDiv.children).forEach(child => child.style.pointerEvents = 'none');
+          setTimeout(() => { qIndex++; showTriviaQ(); }, 600);
+        };
+        optsDiv.appendChild(b);
+      });
+    }
+
+    function generateDriverCard() {
+      document.getElementById('triviaGame').style.display = 'none';
+      document.getElementById('triviaResult').style.display = 'block';
+
+      const counts = {};
+      let maxCount = 0;
+      let winner = "Max Verstappen";
+      selections.forEach(d => {
+        counts[d] = (counts[d] || 0) + 1;
+        if (counts[d] > maxCount) { maxCount = counts[d]; winner = d; }
+      });
+
+      const resDriver = driversData.find(d => d.name === winner) || driversData[0];
+      const tKey = Object.keys(teamsData).find(k => teamsData[k].logo === resDriver.teamLogo);
+      const color = tKey ? teamsData[tKey].color : "#fff";
+
+      const cardHtml = `
+    <div id="triviaScoreCard" style="background:linear-gradient(135deg, ${color}22, #111); border:2px solid ${color}; padding:0; border-radius:12px; position:relative; overflow:hidden; margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,0.8);">
+      <div style="position:absolute; top:-10px; right:-10px; font-size:120px; opacity:0.1; font-family:'Orbitron'; font-weight:900; color:${color};">${resDriver.number}</div>
+      <div style="display:flex; align-items:center; padding:30px; gap:20px;">
+         <img src="${resDriver.image}" style="height:140px; border-radius:8px; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.6));">
+         <div style="text-align:left;">
+            <div style="color:var(--muted); font-family:'Orbitron'; font-size:12px; letter-spacing:1px;">YOU ARE</div>
+            <h2 style="font-family:'Orbitron'; color:#fff; font-size:32px; line-height:1.1; margin:5px 0;">${resDriver.name}</h2>
+            <div style="color:${color}; font-weight:bold; margin-bottom:10px;">${resDriver.team}</div>
+            <p style="font-size:12px; color:#aaa; line-height:1.4;">Based on your choices, you bring the same aggression and tactical mindset as ${resDriver.name}!</p>
+         </div>
+      </div>
+      <div style="background:${color}; color:#fff; padding:12px; font-family:'Orbitron'; font-weight:bold; letter-spacing:1px;">F1 2026 PERSONALITY MATCH</div>
+    </div>
+  `;
+      document.getElementById('triviaScoreCard').outerHTML = cardHtml;
+      document.getElementById('triviaRankTitle').style.display = 'none'; 
+
+      if (!document.getElementById('shareBtn')) {
+        const btn = document.createElement('button');
+        btn.id = 'shareBtn';
+        btn.className = 'btn-primary';
+        btn.innerHTML = 'Share Result 🔗';
+        btn.style.marginLeft = '10px';
+        btn.onclick = () => alert('Result copied to clipboard! Share it with your friends!');
+        document.querySelector('#triviaResult').appendChild(btn);
+      }
+    }
+
+    function saveDrivers() {
+      if (selectedDrivers.length === 0) return alert('Please pick at least 1 driver before continuing.');
+      currentUser.drivers = selectedDrivers;
+      localStorage.setItem('f1_user', JSON.stringify(currentUser));
+
+      const payload = {
+        firebase_uid: currentUser.firebase_uid,
+        email: currentUser.email,
+        display_name: currentUser.name,
+        favorite_team: currentUser.color,
+        favorite_drivers: JSON.stringify(selectedDrivers)
+      };
+      fetch('http://127.0.0.1:8000/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).finally(() => {
+        document.getElementById('onboardModal').style.display = 'none';
+      });
+    }
+  </script>
+</body>
+
+</html>
