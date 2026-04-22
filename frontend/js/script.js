@@ -1,4 +1,4 @@
-﻿function goHome() { window.location.href = "index.html"; }
+function goHome() { window.location.href = "index.html"; }
 function goToAllTeams() { window.location.href = "teams.html"; }
 function goToTeam(key) { window.location.href = `team.html?team=${key}`; }
 function goToAllDrivers() { window.location.href = "drivers.html"; }
@@ -163,7 +163,7 @@ function renderSchedule() {
   const c = document.getElementById("scheduleScroll");
   if (!c || typeof scheduleData === "undefined") return;
 
-  const today = new Date("2026-03-19");
+  const today = new Date("2025-03-15");
   let nextIdx = scheduleData.findIndex(r => r.status === "next");
   if (nextIdx < 0) nextIdx = scheduleData.findIndex(r => r.status === "upcoming");
 
@@ -220,12 +220,12 @@ function downloadICS(eventName, dateStr, circuitName) {
   const calContent = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//F1 2026 Hub//EN",
+    "PRODID:-//F1 2025 Hub//EN",
     "BEGIN:VEVENT",
-    "DTSTART;VALUE=DATE:20260301",
-    "DTEND;VALUE=DATE:20260303",
+    "DTSTART;VALUE=DATE:20250301",
+    "DTEND;VALUE=DATE:20250303",
     `SUMMARY:F1 ${eventName}`,
-    `DESCRIPTION:Formula 1 2026 Season - ${eventName}`,
+    `DESCRIPTION:Formula 1 2025 Season - ${eventName}`,
     `LOCATION:${circuitName}`,
     "END:VEVENT",
     "END:VCALENDAR"
@@ -235,7 +235,7 @@ function downloadICS(eventName, dateStr, circuitName) {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${eventName.replace(/\s+/g, '_')}_2026.ics`;
+  a.download = `${eventName.replace(/\s+/g, '_')}_2025.ics`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -306,8 +306,8 @@ function renderArticle() {
     </div>
     <div class="article-body">
       <p class="lead">${a.body}</p>
-      <p>As the Formula 1 2026 season continues to unfold, every race weekend proves extremely crucial for the World Championship narrative. The paddock is abuzz with the recent technological and aerodynamic adjustments enacted by the FIA. The shifting dynamics present a tantalizing puzzle for structural engineers down the grid, especially at ${teamRandom}.</p>
-      <div class="article-pullquote">"The 2026 regulations redefine the boundary between driver instinct and engineering brilliance. Missing the setup window by a millimeter costs you tenths on track."</div>
+      <p>As the Formula 1 2025 season continues to unfold, every race weekend proves extremely crucial for the World Championship narrative. The paddock is abuzz with the recent technological and aerodynamic adjustments enacted by the FIA. The shifting dynamics present a tantalizing puzzle for structural engineers down the grid, especially at ${teamRandom}.</p>
+      <div class="article-pullquote">"The 2025 regulations redefine the boundary between driver instinct and engineering brilliance. Missing the setup window by a millimeter costs you tenths on track."</div>
       <p>Looking ahead into the mid-season development war, strategic tire preservation and adept deployment of the 50/50 electrical combustion split will be key to out-maneuvering rivals. We will continue to monitor the evolving tech upgrades week over week.</p>
       <div class="article-back"><button class="btn-secondary" onclick="history.back()">← Back to News</button></div>
     </div>
@@ -350,7 +350,7 @@ function loadTeamPage() {
   }
 
   const team = teamsData[teamKey];
-  document.title = `${team.name} – Formula 1 2026`;
+  document.title = `${team.name} – Formula 1 2025`;
 
   const heroBg = document.getElementById("teamHeroBg");
   if (heroBg) {
@@ -377,7 +377,7 @@ function loadTeamPage() {
       <div class="info-row"><span class="info-label">Base</span><span class="info-value">${team.base}</span></div>
       <div class="info-row"><span class="info-label">World Championships</span><span class="info-value" style="color:${team.color}">${team.championships}</span></div>
       <div class="info-row"><span class="info-label">First Entry</span><span class="info-value">${team.firstEntry}</span></div>
-      <div class="info-row"><span class="info-label">Drivers 2026</span><span class="info-value">${team.drivers.join(", ")}</span></div>
+      <div class="info-row"><span class="info-label">Drivers 2025</span><span class="info-value">${team.drivers.join(", ")}</span></div>
       <p style="margin-top:20px;color:#aaa;font-size:13px;line-height:1.8">${team.description}</p>
     `;
   }
@@ -387,7 +387,7 @@ function loadTeamPage() {
     team3d.innerHTML = `
       <div class="tech-specs-container">
         <div class="tech-specs-text">
-          <h2 style="margin-bottom: 24px;">2026 <b>Technical Specs</b></h2>
+          <h2 style="margin-bottom: 24px;">2025 <b>Technical Specs</b></h2>
           <ul class="tech-specs-list">
             <li><strong>Chassis:</strong> Carbon-fibre composite honeycomb</li>
             <li><strong>Power Unit:</strong> ${team.powerUnit} 1.6L V6 Turbo Hybrid (50/50 Split)</li>
@@ -401,7 +401,7 @@ function loadTeamPage() {
           <div class="car-glow"></div>
           <img class="car-showcase-img"
                src="${team.carLarge || team.car}"
-               alt="${team.name} 2026 car"
+               alt="${team.name} 2025 car"
                loading="lazy"
                onerror="this.src='${team.car}'">
         </div>
@@ -839,7 +839,7 @@ function loadDriverPage() {
   const teamKey = Object.keys(teamsData).find(k => teamsData[k].logo === driver.teamLogo);
   const team = teamKey ? teamsData[teamKey] : { color: '#E10600', name: driver.team, logo: driver.teamLogo };
 
-  document.title = `${driver.name} – Formula 1 2026`;
+  document.title = `${driver.name} – Formula 1 2025`;
 
   const heroBg = document.getElementById('driverHeroBg');
   if (heroBg) heroBg.style.background = `radial-gradient(circle at 60% 50%, ${team.color}40 0%, transparent 65%)`;
@@ -871,7 +871,7 @@ function loadDriverPage() {
       </div>
       <div class="driver-stat-card">
         <div class="ds-value" style="color:${team.color};">${totalPts}</div>
-        <div class="ds-label">2026 Points</div>
+        <div class="ds-label">2025 Points</div>
       </div>
       <div class="driver-stat-card">
         <div class="ds-value">${wins}</div>
@@ -895,7 +895,7 @@ function loadDriverPage() {
           ${driver.dob ? `<div class="dpt-row"><span class="dpt-label">Date of Birth</span><span class="dpt-val">${driver.dob}</span></div>` : ''}
           ${driver.hometown ? `<div class="dpt-row"><span class="dpt-label">Hometown</span><span class="dpt-val">${driver.hometown}</span></div>` : ''}
           <div class="dpt-row"><span class="dpt-label">Car Number</span><span class="dpt-val">#${driver.number}</span></div>
-          <div class="dpt-row"><span class="dpt-label">2026 Points</span><span class="dpt-val" style="color:${team.color}; font-weight:bold;">${totalPts}</span></div>
+          <div class="dpt-row"><span class="dpt-label">2025 Points</span><span class="dpt-val" style="color:${team.color}; font-weight:bold;">${totalPts}</span></div>
         </div>
         <div class="driver-profile-actions">
           <button class="btn-primary" onclick="goToTeam('${teamKey}')">View ${team.name}</button>
@@ -923,6 +923,18 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.removeItem('f1_user');
           window.location.reload();
         };
+
+        if (f1User.email === 'test@example.com') {
+          const navLinks = document.querySelector('.nav-links');
+          if (navLinks && !document.getElementById('navAdminBtn')) {
+            const adminLi = document.createElement('li');
+            adminLi.id = 'navAdminBtn';
+            adminLi.textContent = 'Admin Console';
+            adminLi.style.cssText = 'background:var(--red);color:#fff;padding:6px 16px;margin-left:14px;font-weight:700;transition:all 0.2s;cursor:pointer; border-radius:4px;';
+            adminLi.onclick = () => window.location.href = 'admin.html';
+            navLinks.insertBefore(adminLi, navLoginBtn);
+          }
+        }
       }
     } catch (e) { }
   }
@@ -989,7 +1001,7 @@ function initLiveStandingsWidget() {
         <span class="live-dot"></span> TOP 5 LIVE
       </div>
       <div class="live-widget-content">
-        <h3 style="font-family:'Orbitron'; font-size:12px; color:var(--muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #333; padding-bottom:8px;">2026 Driver Standings</h3>
+        <h3 style="font-family:'Orbitron'; font-size:12px; color:var(--muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #333; padding-bottom:8px;">2025 Driver Standings</h3>
         <div class="live-racer-list">
           ${driversData.slice(0, 5).map((d, i) => {
     const team = Object.values(teamsData).find(t => t.name === d.team) || { color: '#E10600' };
@@ -1118,4 +1130,99 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   } catch (e) { }
+});
+
+async function attachJolpicaLayer() {
+  try {
+    const stands = await getJolpicaDriverStandings();
+    const cons = await getJolpicaConstructorStandings();
+    const sched = await getJolpicaSchedule();
+
+    const teamMap = {
+      "red_bull": "redbull",
+      "mercedes": "mercedes",
+      "ferrari": "ferrari",
+      "mclaren": "mclaren",
+      "aston_martin": "astonmartin",
+      "alpine": "alpine",
+      "williams": "williams",
+      "haas": "haas",
+      "rb": "racingbulls",
+      "sauber": "audi",
+      "kick_sauber": "audi"
+    };
+
+    if (cons && cons.length > 0) {
+      for (const tKey in teamsData) {
+        teamsData[tKey].points = 0;
+      }
+      for (const t of cons) {
+        const cId = t.Constructor.constructorId;
+        const mapped = teamMap[cId];
+        if (mapped && teamsData[mapped]) {
+          teamsData[mapped].points = parseInt(t.points, 10);
+        }
+      }
+    }
+
+    if (stands && stands.length > 0) {
+      const stMap = {};
+      for (const s of stands) {
+        stMap[s.Driver.familyName.toLowerCase()] = parseInt(s.points, 10);
+      }
+      for (const d of driversData) {
+        const family = d.name.split(" ").pop().toLowerCase();
+        if (stMap[family] !== undefined) {
+          d.points = stMap[family];
+        } else {
+          d.points = 0;
+        }
+      }
+    }
+
+    if (sched && sched.length > 0) {
+      let isNextFound = false;
+      const now = new Date();
+      scheduleData = sched.map((r, i) => {
+        let rdateStr = r.date;
+        if (r.time) rdateStr += "T" + r.time;
+        else rdateStr += "T15:00:00Z";
+        let rdate = new Date(rdateStr);
+        let status = "completed";
+        if (rdate > now) {
+          status = isNextFound ? "upcoming" : "next";
+          isNextFound = true;
+        }
+        return {
+          round: "Round " + String(i+1).padStart(2, '0'),
+          name: r.raceName,
+          circuit: r.Circuit.circuitName,
+          country: r.Circuit.Location.country,
+          flag: r.Circuit.Location.country.substring(0,3).toUpperCase(),
+          date: rdate.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'}),
+          laps: 50,
+          distance: "300 km",
+          status: status,
+          winner: null 
+        };
+      });
+    }
+
+    if (typeof renderMegaMenu === 'function' && document.getElementById("megaTeamsGrid")) renderMegaMenu();
+    if (typeof renderDriversCarousel === 'function' && document.getElementById("driversCarousel")) renderDriversCarousel();
+    if (typeof renderSchedule === 'function' && document.getElementById("scheduleScroll")) renderSchedule();
+    if (typeof renderHomeStandings === 'function' && document.getElementById("homeTopDrivers")) renderHomeStandings();
+    if (typeof renderTeamsPageStandings === 'function' && document.getElementById("teamsStandingsTable")) renderTeamsPageStandings();
+    if (typeof renderTeamsPage === 'function' && document.getElementById("teamsContainer")) renderTeamsPage();
+    if (typeof renderPointsChart === 'function' && document.getElementById('pointsChart')) renderPointsChart();
+    if (typeof initCompare === 'function' && document.getElementById("compareDriverA")) initCompare();
+    if (typeof initCountdown === 'function' && document.getElementById('countdownWrapper')) initCountdown();
+    if (typeof renderFullSchedule === 'function' && document.getElementById('fullScheduleGrid')) renderFullSchedule();
+  } catch(e) {
+    console.error("Jolpica override failed", e);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+   attachJolpicaLayer();
 });

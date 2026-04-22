@@ -615,7 +615,7 @@
       </div>
 
       <div class="auth-visual-body">
-        <div class="auth-season-badge">2026 Season Live</div>
+        <div class="auth-season-badge">2025 Season Live</div>
         <h1 class="auth-headline">Your Pass to<span>Formula 1</span></h1>
         <p class="auth-subtext">Access live standings, race calendars, team data, driver profiles, and circuit maps —
           all in one place.</p>
@@ -642,7 +642,7 @@
       <div class="auth-visual-bottom">
         <div
           style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">
-          2026 Constructor Teams</div>
+          2025 Constructor Teams</div>
         <div class="auth-teams-strip">
           <div class="auth-team-dot" style="background:#3671C6" title="Red Bull"></div>
           <div class="auth-team-dot" style="background:#E8002D" title="Ferrari"></div>
@@ -722,7 +722,7 @@
 
         <div class="auth-tab-content" id="panel-signup">
           <div class="auth-form-title">Join the Grid</div>
-          <p class="auth-form-sub">Create your account and get full access to the 2026 season.</p>
+          <p class="auth-form-sub">Create your account and get full access to the 2025 season.</p>
 
           <div class="auth-social-row" style="grid-template-columns: 1fr;">
             <button class="auth-social-btn" onclick="socialLogin('Google')">
@@ -825,22 +825,7 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
-
   <script>
-    const firebaseConfig = {
-      apiKey: "",
-      authDomain: "",
-      projectId: "",
-      storageBucket: "",
-      messagingSenderId: "",
-      appId: "",
-      measurementId: ""
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
     function switchTab(t) {
       ['signin', 'signup'].forEach(id => {
         document.getElementById('tab-' + id).classList.toggle('active', id === t);
@@ -918,69 +903,11 @@
     });
 
     function socialLogin(provider) {
-      if (provider === 'Google') {
-        const btn = document.getElementById('btn-signin') || document.getElementById('btn-signup');
-        if (btn) { btn.textContent = 'Authenticating…'; btn.classList.add('loading'); }
-
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(googleProvider).then(res => {
-          const u = res.user;
-          const rawName = u.displayName || u.email.split('@')[0];
-          const payload = {
-            firebase_uid: u.uid,
-            email: u.email,
-            display_name: rawName,
-            favorite_team: '#E10600',
-            favorite_drivers: '[]'
-          };
-
-          fetch('http://127.0.0.1:8000/api/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          }).finally(() => {
-            saveSession({ ...payload, name: rawName, avatar: rawName.slice(0, 2).toUpperCase(), color: '#E10600' });
-            toast(`Welcome, ${rawName.split(' ')[0]}! 🏎️`);
-            setTimeout(() => window.location.href = 'index.html', 1600);
-          });
-        }).catch(err => {
-          if (btn) { btn.textContent = 'Retry Google'; btn.classList.remove('loading'); }
-          if (err.code !== 'auth/popup-closed-by-user') toast(err.message, true);
-        });
-      }
+      toast(provider + " login is currently disabled for local environment.", true);
     }
 
     function forgotPw() {
-      const prefill = document.getElementById('si-email').value.trim();
-      const overlay = document.createElement('div');
-      overlay.id = 'forgotModal';
-      overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);`;
-      overlay.innerHTML = `
-    <div style="background:#111;border:1px solid rgba(255,255,255,0.1);width:380px;max-width:92vw;padding:32px;position:relative;animation:slideUp 0.25s ease;font-family:'Inter',sans-serif;">
-      <button onclick="document.getElementById('forgotModal').remove()" style="position:absolute;top:14px;right:14px;background:none;border:none;color:#888;font-size:18px;cursor:pointer;padding:4px 8px;">✕</button>
-      <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Reset Password</div>
-      <p style="font-size:13px;color:#888;line-height:1.7;margin-bottom:22px;">Enter your email address to receive a password reset link.</p>
-      <input id="forgot-email" type="email" value="${prefill}" placeholder="you@example.com" style="width:100%;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);color:#f0f0f0;font-family:'Inter',sans-serif;font-size:14px;padding:13px 16px;outline:none;margin-bottom:18px;"/>
-      <div id="forgot-sent" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;font-size:10px;padding:12px;margin-bottom:16px;">✓ Link sent!</div>
-      <button onclick="sendResetLink()" style="width:100%;background:#E10600;color:#fff;border:none;font-family:'Orbitron',sans-serif;font-size:11px;padding:14px;cursor:pointer;" id="forgotBtn">Send Link →</button>
-    </div>
-  `;
-      document.body.appendChild(overlay);
-      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-    }
-
-    function sendResetLink() {
-      const email = document.getElementById('forgot-email').value;
-      if (!email) { document.getElementById('forgot-email').style.borderColor = '#E10600'; return; }
-      const btn = document.getElementById('forgotBtn');
-      btn.textContent = 'Sending...';
-      auth.sendPasswordResetEmail(email).then(() => {
-        document.getElementById('forgot-sent').style.display = 'block';
-        btn.textContent = 'Sent ✓';
-      }).catch(err => {
-        btn.textContent = 'Send Link →';
-        toast(err.message, true);
-      });
+      toast("Email functionality is disabled locally.", true);
     }
 
     function saveSession(user) { localStorage.setItem('f1_user', JSON.stringify(user)); }
@@ -993,31 +920,30 @@
 
       btn.textContent = 'Signing In…'; btn.classList.add('loading');
 
-      auth.signInWithEmailAndPassword(email, pw).then(cred => {
-        const u = cred.user;
-        fetch('http://127.0.0.1:8000/api/users/' + u.uid)
-          .then(r => r.ok ? r.json() : null)
-          .then(sqlData => {
-            const tColor = (sqlData && sqlData.favorite_team) ? sqlData.favorite_team : '#E10600';
-            const tName = (sqlData && sqlData.display_name) ? sqlData.display_name : (u.displayName || email.split('@')[0]);
-            saveSession({
-              firebase_uid: u.uid,
-              name: tName,
-              email: u.email,
-              avatar: tName.slice(0, 2).toUpperCase(),
-              color: tColor,
-              drivers: (sqlData && sqlData.favorite_drivers && sqlData.favorite_drivers !== '[]') ? JSON.parse(sqlData.favorite_drivers) : []
-            });
-            toast('Welcome back, ' + tName.split(' ')[0] + '!');
-            setTimeout(() => window.location.href = 'index.html', 1600);
-          }).catch(e => {
-            saveSession({ firebase_uid: u.uid, name: email, email: u.email, avatar: 'F1', color: '#E10600' });
-            toast('Welcome back!');
-            setTimeout(() => window.location.href = 'index.html', 1600);
-          });
-      }).catch(err => {
+      fetch('http://127.0.0.1:8000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: pw })
+      })
+      .then(res => {
+         if (!res.ok) throw new Error("Invalid email or password.");
+         return res.json();
+      })
+      .then(data => {
+        saveSession({
+          user_id: data.user_id,
+          name: data.display_name,
+          email: data.email,
+          avatar: data.display_name.slice(0, 2).toUpperCase(),
+          color: data.favorite_team || '#E10600',
+          drivers: data.favorite_drivers ? JSON.parse(data.favorite_drivers) : []
+        });
+        toast('Welcome back, ' + data.display_name.split(' ')[0] + '!');
+        setTimeout(() => window.location.href = 'index.html', 1600);
+      })
+      .catch(err => {
         btn.textContent = 'Sign In →'; btn.classList.remove('loading');
-        toast('Account not found. Please create an account.', true);
+        toast(err.message, true);
       });
     }
 
@@ -1037,42 +963,43 @@
 
       btn.textContent = 'Creating Account…'; btn.classList.add('loading');
 
-      auth.createUserWithEmailAndPassword(email, pw).then(cred => {
-        const u = cred.user;
-        const fullName = fname + ' ' + lname;
-        u.updateProfile({ displayName: fullName });
+      const payload = {
+        email: email,
+        password: pw,
+        first_name: fname,
+        last_name: lname,
+        favorite_team: teamColor
+      };
 
-        const payload = {
-          firebase_uid: u.uid,
-          email: email,
-          display_name: fullName,
-          favorite_team: teamColor,
-          favorite_drivers: "[]"
-        };
-
-        fetch('http://127.0.0.1:8000/api/users', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }).finally(() => {
-          saveSession({
-            firebase_uid: u.uid,
-            name: fullName,
-            email: email,
-            avatar: (fname[0] + lname[0]).toUpperCase(),
-            color: teamColor,
-            drivers: []
-          });
-          toast('Welcome to F1 2026, ' + fname + '! 🏎️');
-          setTimeout(() => window.location.href = 'index.html', 1800);
+      fetch('http://127.0.0.1:8000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => {
+         if (!res.ok) throw new Error("Account with this email already exists.");
+         return res.json();
+      })
+      .then(data => {
+        saveSession({
+          user_id: data.user_id,
+          name: data.display_name,
+          email: data.email,
+          avatar: (fname[0] + lname[0]).toUpperCase(),
+          color: data.favorite_team,
+          drivers: []
         });
-      }).catch(err => {
+        toast('Welcome to F1 2025, ' + fname + '! 🏎️');
+        setTimeout(() => window.location.href = 'index.html', 1800);
+      })
+      .catch(err => {
         btn.textContent = 'Create Account →'; btn.classList.remove('loading');
         toast(err.message, true);
       });
     }
   </script>
-  <script src="../js/data.js"></script>
+  <script src="../js/jolpica.js"></script>
+    <script src="../js/data.js"></script>
   <script src="../js/script.js"></script>
 </body>
 

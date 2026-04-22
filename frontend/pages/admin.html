@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard – F1 Manager</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" type="image/png" href="../../F1-logo.png">
+    <meta name="view-transition" content="same-origin">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 20px;
+        }
+        .admin-header {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--red);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+        }
+        .admin-table th, .admin-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+        .admin-table th {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: var(--surface2);
+        }
+        .btn-action {
+            background: var(--surface2);
+            color: #fff;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-right: 6px;
+        }
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .btn-danger {
+            background: rgba(225, 6, 0, 0.1);
+            color: var(--red);
+            border-color: rgba(225, 6, 0, 0.3);
+        }
+        .btn-danger:hover {
+            background: var(--red);
+            color: #fff;
+        }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #111;
+            padding: 30px;
+            width: 400px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .modal-field {
+            margin-bottom: 15px;
+        }
+        .modal-field label {
+            display: block;
+            font-size: 10px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+        .modal-field input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar" id="navbar">
+            <div class="logo" onclick="window.location.href='index.html'">
+                <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" class="f1-logo">
+                    <path
+                      d="M1367.21 312.501C1379.83 312.501 1390.25 316.71 1398.5 325.168C1406.75 333.626 1410.88 344.001 1410.88 356.334C1410.88 368.667 1406.79 379.043 1398.58 387.418C1390.38 395.793 1380 400.001 1367.38 400.001C1354.75 400.001 1344.25 395.792 1335.92 387.334C1327.54 378.876 1323.38 368.501 1323.38 356.168C1323.38 343.835 1327.54 333.459 1335.83 325.084C1344.13 316.709 1354.59 312.501 1367.21 312.501ZM1167.04 149.792H635.292C501.959 149.792 473.584 160.083 403.667 227.875H403.708L226.292 400H0L281.542 120.583C386.208 17 436.667 4.27469e-06 615.125 0H1320.04L1167.04 149.792ZM1144.21 173.708L1003.96 313.958H641.125C574.625 313.958 559.917 317.083 526.917 350.083L477 400H267.167L422.292 244.875C483.209 184 504.209 173.708 638.5 173.708H1144.21ZM1600 0L1198.92 400H950.875L1350.88 0H1600ZM1367.13 319.376C1356.79 319.376 1348.13 322.96 1341.13 330.126C1334.17 337.293 1330.67 345.96 1330.67 356.168C1330.67 366.376 1334.17 375.042 1341.13 382.209C1348.09 389.376 1356.75 392.959 1367.13 392.959C1377.5 392.959 1386.13 389.418 1393.13 382.293C1400.09 375.168 1403.58 366.501 1403.58 356.251C1403.58 346.001 1400.09 337.293 1393.13 330.126C1386.17 322.959 1377.5 319.376 1367.13 319.376ZM1367.21 332.084C1373.5 332.084 1378.25 333.251 1381.42 335.626C1384.58 337.959 1386.17 341.501 1386.17 346.209C1386.17 350.917 1385.54 354.417 1384.25 356.709C1382.96 359.001 1380.79 360.834 1377.71 362.251L1386.83 380.668H1376.71L1368.42 363.501H1358.63L1358.58 363.459V380.626H1348.96V332.084H1367.21ZM1358.42 355.918H1368.21C1371.21 355.918 1373.38 355.293 1374.67 354.001C1376 352.709 1376.67 350.626 1376.67 347.751C1376.67 342.293 1373.25 339.584 1366.38 339.584H1358.42V355.918Z"
+                      fill="#E10600" />
+                  </svg>
+            </div>
+            <ul class="nav-links">
+                <li onclick="window.location.href='index.html'">Back to Home Dashboard</li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>Admin Console <span>/ Fantasy Moderation</span></div>
+        </div>
+        
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>User Email</th>
+                    <th>Team Name</th>
+                    <th>Drivers</th>
+                    <th>Constructor</th>
+                    <th>Points</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="teamsTbody">
+                <tr><td colspan="6" style="text-align:center;color:#888;">Loading teams...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">✕</button>
+            <div class="modal-title">Edit Fantasy Team</div>
+            <input type="hidden" id="edit-id" />
+            
+            <div class="modal-field">
+                <label>Team Name</label>
+                <input type="text" id="edit-team" />
+            </div>
+            <div class="modal-field">
+                <label>Driver 1</label>
+                <input type="text" id="edit-driver1" />
+            </div>
+            <div class="modal-field">
+                <label>Driver 2</label>
+                <input type="text" id="edit-driver2" />
+            </div>
+            <div class="modal-field">
+                <label>Constructor</label>
+                <input type="text" id="edit-constructor" />
+            </div>
+            <div class="modal-field">
+                <label>Total Points</label>
+                <input type="number" id="edit-points" />
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-action" onclick="closeModal()" style="background:transparent;">Cancel</button>
+                <button class="btn-action" onclick="saveTeam()" style="background:var(--red);border:none;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/jolpica.js"></script>
+    <script src="../js/data.js"></script>
+    <script>
+        const sessionStr = localStorage.getItem('f1_user');
+        if (!sessionStr) {
+            window.location.href = 'auth.html';
+        }
+        const user = JSON.parse(sessionStr);
+        if (user.email !== 'test@example.com') {
+            window.location.href = 'index.html';
+        }
+
+        async function fetchTeams() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/admin/fantasy_teams?admin_user_id=${user.user_id}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    renderTeams(data.teams);
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function renderTeams(teams) {
+            const tbody = document.getElementById('teamsTbody');
+            tbody.innerHTML = '';
+            if (teams.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No fantasy teams created yet.</td></tr>';
+                return;
+            }
+            teams.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${t.email}</td>
+                    <td style="font-weight:700;">${t.team_name}</td>
+                    <td>${t.driver1} & ${t.driver2}</td>
+                    <td>${t.constructor}</td>
+                    <td style="color:var(--red);font-family:'Orbitron';font-weight:700;">${t.total_points}</td>
+                    <td>
+                        <button class="btn-action" onclick='openModal(${JSON.stringify(t)})'>Edit</button>
+                        <button class="btn-action btn-danger" onclick="deleteTeam(${t.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openModal(t) {
+            document.getElementById('edit-id').value = t.id;
+            document.getElementById('edit-team').value = t.team_name;
+            document.getElementById('edit-driver1').value = t.driver1;
+            document.getElementById('edit-driver2').value = t.driver2;
+            document.getElementById('edit-constructor').value = t.constructor;
+            document.getElementById('edit-points').value = t.total_points;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function saveTeam() {
+            const id = document.getElementById('edit-id').value;
+            const payload = {
+                team_name: document.getElementById('edit-team').value,
+                driver1: document.getElementById('edit-driver1').value,
+                driver2: document.getElementById('edit-driver2').value,
+                constructor: document.getElementById('edit-constructor').value,
+                total_points: parseInt(document.getElementById('edit-points').value, 10)
+            };
+            
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/admin/fantasy_teams/${id}?admin_user_id=${user.user_id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    closeModal();
+                    fetchTeams();
+                } else {
+                    alert("Failed to save changes.");
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function deleteTeam(id) {
+            if (!confirm("Are you sure you want to delete this fantasy team? This cannot be undone.")) return;
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/admin/fantasy_teams/${id}?admin_user_id=${user.user_id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    fetchTeams();
+                } else {
+                    alert('Failed to delete team.');
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchTeams);
+    </script>
+</body>
+</html>
