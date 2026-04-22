@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latest News - F1 Manager</title>
+  <meta name="description" content="The latest Formula 1 news and analysis for the 2026 season.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" type="image/png" href="../../F1-logo.png">
+  <meta name="view-transition" content="same-origin">
+</head>
+
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="logo" onclick="goHome()">
+      <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" class="f1-logo">
+        <path
+          d="M1367.21 312.501C1379.83 312.501 1390.25 316.71 1398.5 325.168C1406.75 333.626 1410.88 344.001 1410.88 356.334C1410.88 368.667 1406.79 379.043 1398.58 387.418C1390.38 395.793 1380 400.001 1367.38 400.001C1354.75 400.001 1344.25 395.792 1335.92 387.334C1327.54 378.876 1323.38 368.501 1323.38 356.168C1323.38 343.835 1327.54 333.459 1335.83 325.084C1344.13 316.709 1354.59 312.501 1367.21 312.501ZM1167.04 149.792H635.292C501.959 149.792 473.584 160.083 403.667 227.875H403.708L226.292 400H0L281.542 120.583C386.208 17 436.667 4.27469e-06 615.125 0H1320.04L1167.04 149.792ZM1144.21 173.708L1003.96 313.958H641.125C574.625 313.958 559.917 317.083 526.917 350.083L477 400H267.167L422.292 244.875C483.209 184 504.209 173.708 638.5 173.708H1144.21ZM1600 0L1198.92 400H950.875L1350.88 0H1600ZM1367.13 319.376C1356.79 319.376 1348.13 322.96 1341.13 330.126C1334.17 337.293 1330.67 345.96 1330.67 356.168C1330.67 366.376 1334.17 375.042 1341.13 382.209C1348.09 389.376 1356.75 392.959 1367.13 392.959C1377.5 392.959 1386.13 389.418 1393.13 382.293C1400.09 375.168 1403.58 366.501 1403.58 356.251C1403.58 346.001 1400.09 337.293 1393.13 330.126C1386.17 322.959 1377.5 319.376 1367.13 319.376ZM1367.21 332.084C1373.5 332.084 1378.25 333.251 1381.42 335.626C1384.58 337.959 1386.17 341.501 1386.17 346.209C1386.17 350.917 1385.54 354.417 1384.25 356.709C1382.96 359.001 1380.79 360.834 1377.71 362.251L1386.83 380.668H1376.71L1368.42 363.501H1358.63L1358.58 363.459V380.626H1348.96V332.084H1367.21ZM1358.42 355.918H1368.21C1371.21 355.918 1373.38 355.293 1374.67 354.001C1376 352.709 1376.67 350.626 1376.67 347.751C1376.67 342.293 1373.25 339.584 1366.38 339.584H1358.42V355.918Z"
+          fill="#E10600" />
+      </svg>
+    </div>
+    <ul class="nav-links">
+      <li onclick="window.location.href='regulations.html'">2026 Rules</li>
+      <li onclick="window.location.href='news.html'">News</li>
+      <li onclick="window.location.href='schedule.html'">Schedule</li>
+      <li onclick="window.location.href='circuits.html'">Circuits</li>
+      <li onclick="window.location.href='drivers.html'">Drivers</li>
+      <li class="has-mega" onclick="goToAllTeams()">Teams &#9662;</li>
+      <li onclick="window.location.href='media.html'">Media</li>
+      <li onclick="window.location.href='contact.html'">Contact</li>
+      <li onclick="window.location.href='fan-experience.html'">Fan Zone</li>
+      <li class="nav-auth-btn" id="navLoginBtn" onclick="window.location.href='auth.html'"
+        style="background:var(--red);color:#fff;padding:6px 16px;margin-left:14px;font-weight:700;transition:all 0.2s;">
+        Sign In</li>
+    </ul>
+  </nav>
+  <div class="mega-wrapper" id="megaWrapper">
+    <div class="mega-menu">
+      <div class="mega-menu-inner">
+        <h3>2026 Constructor Teams</h3>
+        <div class="teams-grid" id="megaTeamsGrid"></div>
+        <div class="mega-all-teams">
+          <button onclick="goToAllTeams()">View All Teams &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <section class="page-hero">
+    <h1>Latest News</h1>
+    <p class="page-hero-sub">Stay up to date with everything happening in the world of Formula 1</p>
+  </section>
+
+  <section class="full-news-section">
+    <div class="full-news-grid" id="fullNewsGrid"></div>
+  </section>
+
+  <footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" class="f1-logo">
+        <path d="M1367.21 312.501C1379.83 312.501 1390.25 316.71 1398.5 325.168C1406.75 333.626 1410.88 344.001 1410.88 356.334C1410.88 368.667 1406.79 379.043 1398.58 387.418C1390.38 395.793 1380 400.001 1367.38 400.001C1354.75 400.001 1344.25 395.792 1335.92 387.334C1327.54 378.876 1323.38 368.501 1323.38 356.168C1323.38 343.835 1327.54 333.459 1335.83 325.084C1344.13 316.709 1354.59 312.501 1367.21 312.501ZM1167.04 149.792H635.292C501.959 149.792 473.584 160.083 403.667 227.875H403.708L226.292 400H0L281.542 120.583C386.208 17 436.667 4.27469e-06 615.125 0H1320.04L1167.04 149.792ZM1144.21 173.708L1003.96 313.958H641.125C574.625 313.958 559.917 317.083 526.917 350.083L477 400H267.167L422.292 244.875C483.209 184 504.209 173.708 638.5 173.708H1144.21ZM1600 0L1198.92 400H950.875L1350.88 0H1600ZM1367.13 319.376C1356.79 319.376 1348.13 322.96 1341.13 330.126C1334.17 337.293 1330.67 345.96 1330.67 356.168C1330.67 366.376 1334.17 375.042 1341.13 382.209C1348.09 389.376 1356.75 392.959 1367.13 392.959C1377.5 392.959 1386.13 389.418 1393.13 382.293C1400.09 375.168 1403.58 366.501 1403.58 356.251C1403.58 346.001 1400.09 337.293 1393.13 330.126C1386.17 322.959 1377.5 319.376 1367.13 319.376ZM1367.21 332.084C1373.5 332.084 1378.25 333.251 1381.42 335.626C1384.58 337.959 1386.17 341.501 1386.17 346.209C1386.17 350.917 1385.54 354.417 1384.25 356.709C1382.96 359.001 1380.79 360.834 1377.71 362.251L1386.83 380.668H1376.71L1368.42 363.501H1358.63L1358.58 363.459V380.626H1348.96V332.084H1367.21ZM1358.42 355.918H1368.21C1371.21 355.918 1373.38 355.293 1374.67 354.001C1376 352.709 1376.67 350.626 1376.67 347.751C1376.67 342.293 1373.25 339.584 1366.38 339.584H1358.42V355.918Z" fill="#E10600"/>
+      </svg>
+      <p>The official source for Formula 1 teams, drivers, and the 2026 season.</p>
+    </div>
+    <div class="footer-col"><h4>Racing</h4><ul><li onclick="window.location.href='schedule.html'">Schedule</li><li><a href="https://www.formula1.com/en/results/2026/races" target ="_blank">Race Results</a></li><li onclick="window.location.href='teams.html'">Standings</li></ul></div>
+    <div class="footer-col"><h4>Content</h4><ul><li onclick="window.location.href='news.html'">Latest News</li><li onclick="window.location.href='teams.html'">Teams</li><li onclick="window.location.href='drivers.html'">Drivers</li></ul></div>
+    <div class="footer-col"><h4>About</h4><ul><li><a href="https://www.formula1.com" target ="_blank">Formula 1</a></li><li><a href="https://www.fia.com" target="_blank">FIA</a></li><li onclick="window.location.href='teams.html'">Regulations</li><li onclick="window.location.href='contact.html'" style="cursor:pointer;">Contact</li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Formula One World Championship Limited. All rights reserved.</p>
+    <div class="footer-social"><a title="Twitter">𝕏</a><a title="Instagram">&#127760;</a><a title="YouTube">&#9654;</a></div>
+  </div>
+</footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/script.js"></script>
+  <script>renderFullNews();</script>
+</body>
+
+</html>

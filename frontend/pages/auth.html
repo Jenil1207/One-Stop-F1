@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In – F1 Manager</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" type="image/png" href="../../F1-logo.png">
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .auth-visual {
+      position: relative;
+      background: #06060a;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 44px;
+      min-height: 100vh;
+    }
+
+    .auth-visual-grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .auth-visual-glow {
+      position: absolute;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(ellipse at center, rgba(225, 6, 0, 0.15) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .auth-track-deco {
+      position: absolute;
+      right: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.055;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .auth-visual-top {
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-visual-body {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 44px 0;
+    }
+
+    .auth-season-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(225, 6, 0, 0.1);
+      border: 1px solid rgba(225, 6, 0, 0.3);
+      color: var(--red);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      margin-bottom: 28px;
+      width: fit-content;
+    }
+
+    .auth-season-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.3;
+        transform: scale(0.6);
+      }
+    }
+
+    .auth-headline {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(26px, 2.8vw, 46px);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .auth-headline span {
+      color: var(--red);
+      display: block;
+    }
+
+    .auth-subtext {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 360px;
+      margin-bottom: 40px;
+    }
+
+    .auth-stats {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .auth-stat-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .auth-stat-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .auth-visual-bottom {
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-teams-strip {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .auth-team-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .auth-form-panel {
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .auth-form-inner {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 4px;
+      margin-bottom: 32px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 11px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .auth-form-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .auth-form-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 26px;
+      line-height: 1.6;
+    }
+
+    .auth-field {
+      margin-bottom: 16px;
+    }
+
+    .auth-field label {
+      display: block;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .auth-field input,
+    .auth-field select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      border-radius: 0;
+      appearance: none;
+    }
+
+    .auth-field input:focus,
+    .auth-field select:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 2px rgba(225, 6, 0, 0.12);
+    }
+
+    .auth-field input::placeholder {
+      color: #444;
+    }
+
+    .auth-field input[type="password"] {
+      letter-spacing: 3px;
+    }
+
+    .auth-field input[type="password"]::placeholder {
+      letter-spacing: 0;
+    }
+
+    .auth-field input.error {
+      border-color: var(--red);
+    }
+
+    .auth-field-error {
+      font-size: 10px;
+      color: var(--red);
+      margin-top: 5px;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.5px;
+      display: none;
+    }
+
+    .auth-field-error.show {
+      display: block;
+    }
+
+    .auth-pw-wrap {
+      position: relative;
+    }
+
+    .auth-pw-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 9px;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 0;
+    }
+
+    .auth-pw-toggle:hover {
+      color: var(--text);
+    }
+
+    .pw-strength-wrap {
+      margin-top: 8px;
+      display: none;
+    }
+
+    .pw-strength-track {
+      height: 3px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .pw-strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s, background 0.3s;
+    }
+
+    .pw-strength-label {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .auth-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .auth-team-selector {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      margin-top: 4px;
+    }
+
+    .team-pill {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 8px 3px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+
+    .team-pill:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      color: var(--text);
+    }
+
+    .team-pill.selected {
+      color: #fff;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .auth-divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .auth-divider-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .auth-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .auth-check-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .auth-check-label input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--red);
+    }
+
+    .auth-forgot {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .auth-forgot:hover {
+      color: var(--red);
+    }
+
+    .auth-terms {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .auth-terms input[type="checkbox"] {
+      margin-top: 3px;
+      width: 14px;
+      height: 14px;
+      accent-color: var(--red);
+      flex-shrink: 0;
+    }
+
+    .auth-terms span {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .auth-terms a {
+      color: var(--red);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .auth-submit {
+      width: 100%;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 15px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .auth-submit:hover {
+      background: var(--red-dark);
+    }
+
+    .auth-submit:active {
+      transform: scale(0.99);
+    }
+
+    .auth-submit.loading {
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    .auth-social-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .auth-social-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .auth-social-btn:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      background: var(--surface2);
+    }
+
+    .auth-social-icon {
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .auth-tab-content {
+      display: none;
+    }
+
+    .auth-tab-content.active {
+      display: block;
+    }
+
+    .auth-toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #16a34a;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 14px 22px;
+      z-index: 9999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.35s ease;
+    }
+
+    .auth-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .auth-toast.err {
+      background: var(--red);
+    }
+
+    @media(max-width:900px) {
+      .auth-page {
+        grid-template-columns: 1fr;
+      }
+
+      .auth-visual {
+        display: none;
+      }
+
+      .auth-form-panel {
+        min-height: 100vh;
+        padding: 100px 24px 40px;
+        align-items: flex-start;
+      }
+    }
+  </style>
+  <meta name="view-transition" content="same-origin">
+</head>
+
+<body>
+
+  <div class="auth-toast" id="toast"></div>
+
+  <div class="auth-page">
+
+    <div class="auth-visual">
+      <div class="auth-visual-grid"></div>
+      <div class="auth-visual-glow"></div>
+
+      <svg class="auth-track-deco" viewBox="0 0 280 500" width="280" height="500" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M240 480 Q190 450 170 370 L150 270 Q130 190 190 150 L230 120 Q270 92 252 44 Q232 8 168 18 L90 28 Q32 38 28 118 L48 238 Q58 296 28 354 L8 448"
+          stroke="white" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        <path
+          d="M240 480 Q190 450 170 370 L150 270 Q130 190 190 150 L230 120 Q270 92 252 44 Q232 8 168 18 L90 28 Q32 38 28 118 L48 238 Q58 296 28 354 L8 448"
+          stroke="#E10600" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"
+          stroke-dasharray="2000" stroke-dashoffset="2000">
+          <animate attributeName="stroke-dashoffset" from="2000" to="0" dur="4s" begin="0s" repeatCount="indefinite" />
+        </path>
+      </svg>
+
+      <div class="auth-visual-top">
+        <div onclick="window.location.href='index.html'" style="cursor:pointer;">
+          <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" style="height:22px;width:auto;">
+            <path
+              d="M1367.21 312.501C1379.83 312.501 1390.25 316.71 1398.5 325.168C1406.75 333.626 1410.88 344.001 1410.88 356.334C1410.88 368.667 1406.79 379.043 1398.58 387.418C1390.38 395.793 1380 400.001 1367.38 400.001C1354.75 400.001 1344.25 395.792 1335.92 387.334C1327.54 378.876 1323.38 368.501 1323.38 356.168C1323.38 343.835 1327.54 333.459 1335.83 325.084C1344.13 316.709 1354.59 312.501 1367.21 312.501ZM1167.04 149.792H635.292C501.959 149.792 473.584 160.083 403.667 227.875H403.708L226.292 400H0L281.542 120.583C386.208 17 436.667 4.27469e-06 615.125 0H1320.04L1167.04 149.792ZM1144.21 173.708L1003.96 313.958H641.125C574.625 313.958 559.917 317.083 526.917 350.083L477 400H267.167L422.292 244.875C483.209 184 504.209 173.708 638.5 173.708H1144.21ZM1600 0L1198.92 400H950.875L1350.88 0H1600ZM1367.13 319.376C1356.79 319.376 1348.13 322.96 1341.13 330.126C1334.17 337.293 1330.67 345.96 1330.67 356.168C1330.67 366.376 1334.17 375.042 1341.13 382.209C1348.09 389.376 1356.75 392.959 1367.13 392.959C1377.5 392.959 1386.13 389.418 1393.13 382.293C1400.09 375.168 1403.58 366.501 1403.58 356.251C1403.58 346.001 1400.09 337.293 1393.13 330.126C1386.17 322.959 1377.5 319.376 1367.13 319.376ZM1367.21 332.084C1373.5 332.084 1378.25 333.251 1381.42 335.626C1384.58 337.959 1386.17 341.501 1386.17 346.209C1386.17 350.917 1385.54 354.417 1384.25 356.709C1382.96 359.001 1380.79 360.834 1377.71 362.251L1386.83 380.668H1376.71L1368.42 363.501H1358.63L1358.58 363.459V380.626H1348.96V332.084H1367.21ZM1358.42 355.918H1368.21C1371.21 355.918 1373.38 355.293 1374.67 354.001C1376 352.709 1376.67 350.626 1376.67 347.751C1376.67 342.293 1373.25 339.584 1366.38 339.584H1358.42V355.918Z"
+              fill="#E10600" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="auth-visual-body">
+        <div class="auth-season-badge">2026 Season Live</div>
+        <h1 class="auth-headline">Your Pass to<span>Formula 1</span></h1>
+        <p class="auth-subtext">Access live standings, race calendars, team data, driver profiles, and circuit maps —
+          all in one place.</p>
+        <div class="auth-stats">
+          <div class="auth-stat">
+            <div class="auth-stat-val count-up" data-target="24">0</div>
+            <div class="auth-stat-label">Grand Prix</div>
+          </div>
+          <div class="auth-stat">
+            <div class="auth-stat-val count-up" data-target="20">0</div>
+            <div class="auth-stat-label">Drivers</div>
+          </div>
+          <div class="auth-stat">
+            <div class="auth-stat-val count-up" data-target="10">0</div>
+            <div class="auth-stat-label">Teams</div>
+          </div>
+          <div class="auth-stat">
+            <div class="auth-stat-val count-up" data-target="6">0</div>
+            <div class="auth-stat-label">Circuits</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-visual-bottom">
+        <div
+          style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">
+          2026 Constructor Teams</div>
+        <div class="auth-teams-strip">
+          <div class="auth-team-dot" style="background:#3671C6" title="Red Bull"></div>
+          <div class="auth-team-dot" style="background:#E8002D" title="Ferrari"></div>
+          <div class="auth-team-dot" style="background:#FF8000" title="McLaren"></div>
+          <div class="auth-team-dot" style="background:#27F4D2" title="Mercedes"></div>
+          <div class="auth-team-dot" style="background:#229971" title="Aston Martin"></div>
+          <div class="auth-team-dot" style="background:#0093CC" title="Alpine"></div>
+          <div class="auth-team-dot" style="background:#B6BABD" title="Haas"></div>
+          <div class="auth-team-dot" style="background:#6692FF" title="RB"></div>
+          <div class="auth-team-dot" style="background:#64C4FF" title="Williams"></div>
+          <div class="auth-team-dot" style="background:#00CF46" title="Sauber"></div>
+          <span style="font-size:11px;color:var(--muted);">All 10 teams</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-form-panel">
+      <div class="auth-form-inner">
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+          <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+        </div>
+
+        <div class="auth-tab-content active" id="panel-signin">
+          <div class="auth-form-title">Welcome Back</div>
+          <p class="auth-form-sub">Sign in to access your F1 dashboard and personalised content.</p>
+
+          <div class="auth-social-row" style="grid-template-columns: 1fr;">
+            <button class="auth-social-btn" onclick="socialLogin('Google')">
+              <svg viewBox="0 0 48 48" width="16" height="16" style="margin-right:6px;">
+                <path fill="#EA4335"
+                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z" />
+                <path fill="#4285F4"
+                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                <path fill="#FBBC05"
+                  d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                <path fill="#34A853"
+                  d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.58-13.47-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+              </svg>
+              Continue with Google
+            </button>
+          </div>
+
+          <div class="auth-divider">
+            <div class="auth-divider-line"></div><span class="auth-divider-text">or email</span>
+            <div class="auth-divider-line"></div>
+          </div>
+
+          <div class="auth-field">
+            <label>Email Address</label>
+            <input type="email" id="si-email" placeholder="you@example.com" />
+            <div class="auth-field-error" id="err-si-email">Please enter a valid email address</div>
+          </div>
+
+          <div class="auth-field">
+            <label>Password</label>
+            <div class="auth-pw-wrap">
+              <input type="password" id="si-pw" placeholder="Your password" />
+              <button class="auth-pw-toggle" onclick="togglePw('si-pw',this)">SHOW</button>
+            </div>
+            <div class="auth-field-error" id="err-si-pw">Password is required</div>
+          </div>
+
+          <div class="auth-row">
+            <label class="auth-check-label"><input type="checkbox" /> Remember me</label>
+            <span class="auth-forgot" onclick="forgotPw()">Forgot Password?</span>
+          </div>
+
+          <button class="auth-submit" id="btn-signin" onclick="doSignIn()">Sign In →</button>
+
+          <p style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);">
+            No account? <span style="color:var(--red);cursor:pointer;font-weight:600;"
+              onclick="switchTab('signup')">Create one →</span>
+          </p>
+        </div>
+
+        <div class="auth-tab-content" id="panel-signup">
+          <div class="auth-form-title">Join the Grid</div>
+          <p class="auth-form-sub">Create your account and get full access to the 2026 season.</p>
+
+          <div class="auth-social-row" style="grid-template-columns: 1fr;">
+            <button class="auth-social-btn" onclick="socialLogin('Google')">
+              <svg viewBox="0 0 48 48" width="16" height="16" style="margin-right:6px;">
+                <path fill="#EA4335"
+                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z" />
+                <path fill="#4285F4"
+                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                <path fill="#FBBC05"
+                  d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                <path fill="#34A853"
+                  d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.58-13.47-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+              </svg>
+              Continue with Google
+            </button>
+          </div>
+
+          <div class="auth-divider">
+            <div class="auth-divider-line"></div><span class="auth-divider-text">or email</span>
+            <div class="auth-divider-line"></div>
+          </div>
+
+          <div class="auth-grid-2">
+            <div class="auth-field">
+              <label>First Name</label>
+              <input type="text" id="su-fname" placeholder="Lewis" />
+              <div class="auth-field-error" id="err-su-fname">Required</div>
+            </div>
+            <div class="auth-field">
+              <label>Last Name</label>
+              <input type="text" id="su-lname" placeholder="Hamilton" />
+              <div class="auth-field-error" id="err-su-lname">Required</div>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label>Email Address</label>
+            <input type="email" id="su-email" placeholder="you@example.com" />
+            <div class="auth-field-error" id="err-su-email">Please enter a valid email address</div>
+          </div>
+
+          <div class="auth-field">
+            <label>Password</label>
+            <div class="auth-pw-wrap">
+              <input type="password" id="su-pw" placeholder="Create a strong password"
+                oninput="checkStrength(this.value)" />
+              <button class="auth-pw-toggle" onclick="togglePw('su-pw',this)">SHOW</button>
+            </div>
+            <div class="pw-strength-wrap" id="strengthWrap">
+              <div class="pw-strength-track">
+                <div class="pw-strength-fill" id="strengthFill"></div>
+              </div>
+              <div class="pw-strength-label" id="strengthLabel">Weak</div>
+            </div>
+            <div class="auth-field-error" id="err-su-pw">Password must be at least 8 characters</div>
+          </div>
+
+          <div class="auth-field">
+            <label>Favourite Team <span
+                style="color:var(--muted);font-size:8px;letter-spacing:0;">(optional)</span></label>
+            <div class="auth-team-selector">
+              <div class="team-pill" onclick="pickTeam(this,'#3671C6')" data-team-color="#3671C6"
+                style="border-top:2px solid #3671C6">Red Bull</div>
+              <div class="team-pill" onclick="pickTeam(this,'#E8002D')" data-team-color="#E8002D"
+                style="border-top:2px solid #E8002D">Ferrari</div>
+              <div class="team-pill" onclick="pickTeam(this,'#FF8000')" data-team-color="#FF8000"
+                style="border-top:2px solid #FF8000">McLaren</div>
+              <div class="team-pill" onclick="pickTeam(this,'#27F4D2')" data-team-color="#27F4D2"
+                style="border-top:2px solid #27F4D2">Mercedes</div>
+              <div class="team-pill" onclick="pickTeam(this,'#229971')" data-team-color="#229971"
+                style="border-top:2px solid #229971">Aston M.</div>
+              <div class="team-pill" onclick="pickTeam(this,'#0093CC')" data-team-color="#0093CC"
+                style="border-top:2px solid #0093CC">Alpine</div>
+              <div class="team-pill" onclick="pickTeam(this,'#B6BABD')" data-team-color="#B6BABD"
+                style="border-top:2px solid #B6BABD">Haas</div>
+              <div class="team-pill" onclick="pickTeam(this,'#6692FF')" data-team-color="#6692FF"
+                style="border-top:2px solid #6692FF">RB</div>
+              <div class="team-pill" onclick="pickTeam(this,'#64C4FF')" data-team-color="#64C4FF"
+                style="border-top:2px solid #64C4FF">Williams</div>
+              <div class="team-pill" onclick="pickTeam(this,'#00CF46')" data-team-color="#00CF46"
+                style="border-top:2px solid #00CF46">Sauber</div>
+            </div>
+          </div>
+
+          <div class="auth-terms">
+            <input type="checkbox" id="su-terms" />
+            <span>I agree to the <a>Terms of Service</a> and <a>Privacy Policy</a>. I consent to receive Formula 1
+              season updates.</span>
+          </div>
+
+          <button class="auth-submit" id="btn-signup" onclick="doSignUp()">Create Account →</button>
+
+          <p style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted);">
+            Have an account? <span style="color:var(--red);cursor:pointer;font-weight:600;"
+              onclick="switchTab('signin')">Sign in →</span>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "",
+      authDomain: "",
+      projectId: "",
+      storageBucket: "",
+      messagingSenderId: "",
+      appId: "",
+      measurementId: ""
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function switchTab(t) {
+      ['signin', 'signup'].forEach(id => {
+        document.getElementById('tab-' + id).classList.toggle('active', id === t);
+        document.getElementById('panel-' + id).classList.toggle('active', id === t);
+      });
+    }
+
+    function toast(msg, err = false) {
+      const el = document.getElementById('toast');
+      el.textContent = (err ? '✕  ' : '✓  ') + msg;
+      el.className = 'auth-toast' + (err ? ' err' : '');
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3600);
+    }
+
+    function validate(inputId, errId, condition) {
+      document.getElementById(inputId).classList.toggle('error', !condition);
+      document.getElementById(errId).classList.toggle('show', !condition);
+      return condition;
+    }
+
+    function togglePw(id, btn) {
+      const el = document.getElementById(id);
+      const hiding = el.type === 'password';
+      el.type = hiding ? 'text' : 'password';
+      btn.textContent = hiding ? 'HIDE' : 'SHOW';
+    }
+
+    function checkStrength(v) {
+      const wrap = document.getElementById('strengthWrap');
+      const fill = document.getElementById('strengthFill');
+      const label = document.getElementById('strengthLabel');
+      if (!v) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'block';
+      let s = 0;
+      if (v.length >= 8) s++;
+      if (/[A-Z]/.test(v)) s++;
+      if (/[0-9]/.test(v)) s++;
+      if (/[^A-Za-z0-9]/.test(v)) s++;
+      const lvl = [
+        { w: '25%', c: '#E10600', t: 'Weak' },
+        { w: '50%', c: '#f97316', t: 'Fair' },
+        { w: '75%', c: '#eab308', t: 'Good' },
+        { w: '100%', c: '#22c55e', t: 'Strong' },
+      ][Math.max(s - 1, 0)];
+      fill.style.width = lvl.w;
+      fill.style.background = lvl.c;
+      label.textContent = lvl.t;
+      label.style.color = lvl.c;
+    }
+
+    function pickTeam(el, color) {
+      document.querySelectorAll('.team-pill').forEach(p => {
+        p.classList.remove('selected');
+        p.style.background = '';
+        p.style.color = '';
+      });
+      el.classList.add('selected');
+      el.style.background = color + '22';
+      el.style.color = '#fff';
+      el.dataset.teamColor = color;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const elements = document.querySelectorAll('.count-up');
+      elements.forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'));
+        let current = 0;
+        const interval = setInterval(() => {
+          current++;
+          el.textContent = current;
+          if (current >= target) clearInterval(interval);
+        }, 45);
+      });
+    });
+
+    function socialLogin(provider) {
+      if (provider === 'Google') {
+        const btn = document.getElementById('btn-signin') || document.getElementById('btn-signup');
+        if (btn) { btn.textContent = 'Authenticating…'; btn.classList.add('loading'); }
+
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(googleProvider).then(res => {
+          const u = res.user;
+          const rawName = u.displayName || u.email.split('@')[0];
+          const payload = {
+            firebase_uid: u.uid,
+            email: u.email,
+            display_name: rawName,
+            favorite_team: '#E10600',
+            favorite_drivers: '[]'
+          };
+
+          fetch('http://127.0.0.1:8000/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).finally(() => {
+            saveSession({ ...payload, name: rawName, avatar: rawName.slice(0, 2).toUpperCase(), color: '#E10600' });
+            toast(`Welcome, ${rawName.split(' ')[0]}! 🏎️`);
+            setTimeout(() => window.location.href = 'index.html', 1600);
+          });
+        }).catch(err => {
+          if (btn) { btn.textContent = 'Retry Google'; btn.classList.remove('loading'); }
+          if (err.code !== 'auth/popup-closed-by-user') toast(err.message, true);
+        });
+      }
+    }
+
+    function forgotPw() {
+      const prefill = document.getElementById('si-email').value.trim();
+      const overlay = document.createElement('div');
+      overlay.id = 'forgotModal';
+      overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);`;
+      overlay.innerHTML = `
+    <div style="background:#111;border:1px solid rgba(255,255,255,0.1);width:380px;max-width:92vw;padding:32px;position:relative;animation:slideUp 0.25s ease;font-family:'Inter',sans-serif;">
+      <button onclick="document.getElementById('forgotModal').remove()" style="position:absolute;top:14px;right:14px;background:none;border:none;color:#888;font-size:18px;cursor:pointer;padding:4px 8px;">✕</button>
+      <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Reset Password</div>
+      <p style="font-size:13px;color:#888;line-height:1.7;margin-bottom:22px;">Enter your email address to receive a password reset link.</p>
+      <input id="forgot-email" type="email" value="${prefill}" placeholder="you@example.com" style="width:100%;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);color:#f0f0f0;font-family:'Inter',sans-serif;font-size:14px;padding:13px 16px;outline:none;margin-bottom:18px;"/>
+      <div id="forgot-sent" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;font-size:10px;padding:12px;margin-bottom:16px;">✓ Link sent!</div>
+      <button onclick="sendResetLink()" style="width:100%;background:#E10600;color:#fff;border:none;font-family:'Orbitron',sans-serif;font-size:11px;padding:14px;cursor:pointer;" id="forgotBtn">Send Link →</button>
+    </div>
+  `;
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    }
+
+    function sendResetLink() {
+      const email = document.getElementById('forgot-email').value;
+      if (!email) { document.getElementById('forgot-email').style.borderColor = '#E10600'; return; }
+      const btn = document.getElementById('forgotBtn');
+      btn.textContent = 'Sending...';
+      auth.sendPasswordResetEmail(email).then(() => {
+        document.getElementById('forgot-sent').style.display = 'block';
+        btn.textContent = 'Sent ✓';
+      }).catch(err => {
+        btn.textContent = 'Send Link →';
+        toast(err.message, true);
+      });
+    }
+
+    function saveSession(user) { localStorage.setItem('f1_user', JSON.stringify(user)); }
+
+    function doSignIn() {
+      const email = document.getElementById('si-email').value.trim();
+      const pw = document.getElementById('si-pw').value;
+      const btn = document.getElementById('btn-signin');
+      if (!email || !pw) return validate('si-email', 'err-si-email', false);
+
+      btn.textContent = 'Signing In…'; btn.classList.add('loading');
+
+      auth.signInWithEmailAndPassword(email, pw).then(cred => {
+        const u = cred.user;
+        fetch('http://127.0.0.1:8000/api/users/' + u.uid)
+          .then(r => r.ok ? r.json() : null)
+          .then(sqlData => {
+            const tColor = (sqlData && sqlData.favorite_team) ? sqlData.favorite_team : '#E10600';
+            const tName = (sqlData && sqlData.display_name) ? sqlData.display_name : (u.displayName || email.split('@')[0]);
+            saveSession({
+              firebase_uid: u.uid,
+              name: tName,
+              email: u.email,
+              avatar: tName.slice(0, 2).toUpperCase(),
+              color: tColor,
+              drivers: (sqlData && sqlData.favorite_drivers && sqlData.favorite_drivers !== '[]') ? JSON.parse(sqlData.favorite_drivers) : []
+            });
+            toast('Welcome back, ' + tName.split(' ')[0] + '!');
+            setTimeout(() => window.location.href = 'index.html', 1600);
+          }).catch(e => {
+            saveSession({ firebase_uid: u.uid, name: email, email: u.email, avatar: 'F1', color: '#E10600' });
+            toast('Welcome back!');
+            setTimeout(() => window.location.href = 'index.html', 1600);
+          });
+      }).catch(err => {
+        btn.textContent = 'Sign In →'; btn.classList.remove('loading');
+        toast('Account not found. Please create an account.', true);
+      });
+    }
+
+    function doSignUp() {
+      const fname = document.getElementById('su-fname').value.trim();
+      const lname = document.getElementById('su-lname').value.trim();
+      const email = document.getElementById('su-email').value.trim();
+      const pw = document.getElementById('su-pw').value;
+      const terms = document.getElementById('su-terms').checked;
+      const btn = document.getElementById('btn-signup');
+
+      if (!terms) return toast('Please accept the Terms to continue.', true);
+      if (!fname || !lname || !email || pw.length < 8) return toast('Please fill out all fields.', true);
+
+      const selectedPill = document.querySelector('.team-pill.selected');
+      const teamColor = selectedPill ? selectedPill.dataset.teamColor : '#E10600';
+
+      btn.textContent = 'Creating Account…'; btn.classList.add('loading');
+
+      auth.createUserWithEmailAndPassword(email, pw).then(cred => {
+        const u = cred.user;
+        const fullName = fname + ' ' + lname;
+        u.updateProfile({ displayName: fullName });
+
+        const payload = {
+          firebase_uid: u.uid,
+          email: email,
+          display_name: fullName,
+          favorite_team: teamColor,
+          favorite_drivers: "[]"
+        };
+
+        fetch('http://127.0.0.1:8000/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).finally(() => {
+          saveSession({
+            firebase_uid: u.uid,
+            name: fullName,
+            email: email,
+            avatar: (fname[0] + lname[0]).toUpperCase(),
+            color: teamColor,
+            drivers: []
+          });
+          toast('Welcome to F1 2026, ' + fname + '! 🏎️');
+          setTimeout(() => window.location.href = 'index.html', 1800);
+        });
+      }).catch(err => {
+        btn.textContent = 'Create Account →'; btn.classList.remove('loading');
+        toast(err.message, true);
+      });
+    }
+  </script>
+  <script src="../js/data.js"></script>
+  <script src="../js/script.js"></script>
+</body>
+
+</html>

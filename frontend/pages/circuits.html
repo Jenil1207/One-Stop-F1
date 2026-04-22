@@ -1,0 +1,284 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 Circuits – F1 Manager</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" type="image/png" href="../../F1-logo.png">
+  <style>
+    :root{--s1:#f5c518;--s2:#27c93f;--s3:#b44fff;}
+    .circuits-legend{display:flex;gap:20px;justify-content:center;margin-bottom:40px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap;}
+    .legend-item{display:flex;align-items:center;gap:8px;font-family:'Orbitron',sans-serif;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+    .li-box{width:26px;height:4px;border-radius:2px;}
+    .li-dot{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:bold;color:#fff;}
+    .circuits-page{padding:40px 20px;max-width:1300px;margin:0 auto;}
+    .circuits-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;}
+    .circuit-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;position:relative;}
+    .circuit-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,0.5);border-color:rgba(225,6,0,0.3);}
+    .circuit-card:hover canvas{filter:brightness(1.15);}
+    .circuit-card:hover .cc-hint{opacity:1;}
+    .cc-canvas-wrap{position:relative;background:#080808;width:100%;border-bottom:1px solid var(--border);}
+    .cc-canvas-wrap canvas{display:block;width:100%;height:auto;}
+    .cc-round-badge{position:absolute;top:12px;left:14px;font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);}
+    .cc-flag{position:absolute;top:10px;right:14px;font-size:20px;}
+    .cc-sf-badge{position:absolute;bottom:10px;left:14px;font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;background:var(--red);color:#fff;padding:2px 8px;}
+    .cc-hint{position:absolute;bottom:10px;right:14px;font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);opacity:0;transition:opacity 0.2s;}
+    .cc-info{padding:16px 18px 18px;}
+    .cc-name{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;margin-bottom:3px;line-height:1.2;}
+    .cc-location{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:0.5px;color:var(--muted);margin-bottom:14px;}
+    .cc-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+    .cc-stat-label{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+    .cc-stat-val{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;line-height:1;}
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--bg2);border:1px solid var(--border);max-width:1100px;width:100%;max-height:92vh;overflow-y:auto;position:relative;display:grid;grid-template-columns:1fr 340px;min-height:560px;border-radius:4px;}
+    .modal-close-btn{position:absolute;top:14px;right:14px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;padding:7px 14px;cursor:pointer;z-index:10;transition:color 0.2s,border-color 0.2s;}
+    .modal-close-btn:hover{color:var(--red);border-color:var(--red);}
+    .modal-canvas-col{background:#080808;position:relative;display:flex;flex-direction:column;}
+    .modal-canvas-header{padding:20px 24px 0;display:flex;align-items:flex-start;gap:14px;}
+    .modal-round-tag{font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:4px 10px;white-space:nowrap;}
+    .modal-title{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:800;text-transform:uppercase;line-height:1.1;}
+    .modal-sub{font-size:10px;color:var(--muted);margin-top:4px;font-family:'Orbitron',sans-serif;letter-spacing:0.5px;}
+    .modal-canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .modal-canvas-wrap canvas{width:100%;height:auto;display:block;}
+    .sector-strip{display:flex;height:5px;margin:0 20px 4px;}
+    .sector-bar{flex:1;transition:opacity 0.3s;}
+    .sector-bar.s1{background:var(--s1);}
+    .sector-bar.s2{background:var(--s2);}
+    .sector-bar.s3{background:var(--s3);}
+    .sector-bar.inactive{opacity:0.15;}
+    .anim-controls{padding:12px 20px 18px;display:flex;align-items:center;gap:12px;}
+    .anim-btn{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:var(--red);color:#fff;border:none;padding:8px 18px;cursor:pointer;transition:background 0.2s;}
+    .anim-btn:hover{background:var(--red-dark);}
+    .anim-progress-wrap{flex:1;height:3px;background:rgba(255,255,255,0.06);overflow:hidden;}
+    .anim-progress-fill{height:100%;background:var(--red);width:0%;transition:width 0.1s linear;}
+    .sector-legend{display:flex;gap:14px;}
+    .slabel{display:flex;align-items:center;gap:5px;font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+    .sdot{width:8px;height:8px;border-radius:50%;}
+    .modal-info-col{border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;background:var(--surface);}
+    .modal-section{padding:18px 18px 14px;border-bottom:1px solid var(--border);}
+    .modal-section:last-child{border-bottom:none;}
+    .modal-section-title{font-family:'Orbitron',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+    .modal-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+    .mstat{background:var(--bg3);padding:12px 14px;}
+    .mstat .ml{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+    .mstat .mv{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:800;line-height:1;}
+    .sector-rows{display:flex;flex-direction:column;gap:8px;}
+    .sector-row{display:flex;align-items:center;gap:10px;}
+    .sector-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+    .sector-row-label{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+    .sector-row-time{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:800;line-height:1;margin-left:auto;}
+    .drs-list{display:flex;flex-direction:column;gap:6px;}
+    .drs-item{background:rgba(0,210,190,0.05);border:1px solid rgba(0,210,190,0.15);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
+    .drs-item-label{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:#00D2BE;}
+    .drs-item-len{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#00D2BE;}
+    .corners-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+    .corner-chip{background:var(--bg3);padding:8px 4px;text-align:center;}
+    .corner-chip .cn{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:800;line-height:1;}
+    .corner-chip .ct{font-family:'Orbitron',sans-serif;font-size:7px;letter-spacing:0.5px;color:var(--muted);margin-top:2px;}
+    @media(max-width:900px){.modal{grid-template-columns:1fr;}.modal-info-col{border-left:none;border-top:1px solid var(--border);}.circuits-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="logo" onclick="goHome()">
+    <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" class="f1-logo">
+      <path d="M1367.21 312.501C1379.83 312.501 1390.25 316.71 1398.5 325.168C1406.75 333.626 1410.88 344.001 1410.88 356.334C1410.88 368.667 1406.79 379.043 1398.58 387.418C1390.38 395.793 1380 400.001 1367.38 400.001C1354.75 400.001 1344.25 395.792 1335.92 387.334C1327.54 378.876 1323.38 368.501 1323.38 356.168C1323.38 343.835 1327.54 333.459 1335.83 325.084C1344.13 316.709 1354.59 312.501 1367.21 312.501ZM1167.04 149.792H635.292C501.959 149.792 473.584 160.083 403.667 227.875H403.708L226.292 400H0L281.542 120.583C386.208 17 436.667 4.27469e-06 615.125 0H1320.04L1167.04 149.792ZM1144.21 173.708L1003.96 313.958H641.125C574.625 313.958 559.917 317.083 526.917 350.083L477 400H267.167L422.292 244.875C483.209 184 504.209 173.708 638.5 173.708H1144.21ZM1600 0L1198.92 400H950.875L1350.88 0H1600ZM1367.13 319.376C1356.79 319.376 1348.13 322.96 1341.13 330.126C1334.17 337.293 1330.67 345.96 1330.67 356.168C1330.67 366.376 1334.17 375.042 1341.13 382.209C1348.09 389.376 1356.75 392.959 1367.13 392.959C1377.5 392.959 1386.13 389.418 1393.13 382.293C1400.09 375.168 1403.58 366.501 1403.58 356.251C1403.58 346.001 1400.09 337.293 1393.13 330.126C1386.17 322.959 1377.5 319.376 1367.13 319.376ZM1367.21 332.084C1373.5 332.084 1378.25 333.251 1381.42 335.626C1384.58 337.959 1386.17 341.501 1386.17 346.209C1386.17 350.917 1385.54 354.417 1384.25 356.709C1382.96 359.001 1380.79 360.834 1377.71 362.251L1386.83 380.668H1376.71L1368.42 363.501H1358.63L1358.58 363.459V380.626H1348.96V332.084H1367.21ZM1358.42 355.918H1368.21C1371.21 355.918 1373.38 355.293 1374.67 354.001C1376 352.709 1376.67 350.626 1376.67 347.751C1376.67 342.293 1373.25 339.584 1366.38 339.584H1358.42V355.918Z" fill="#E10600"/>
+    </svg>
+  </div>
+  <ul class="nav-links">
+    <li onclick="window.location.href='regulations.html'">2026 Rules</li>
+    <li onclick="window.location.href='news.html'">News</li>
+    <li onclick="window.location.href='schedule.html'">Schedule</li>
+    <li onclick="window.location.href='drivers.html'">Drivers</li>
+    <li class="has-mega" onclick="goToAllTeams()">Teams &#9662;</li>
+    <li onclick="window.location.href='circuits.html'">Circuits</li>
+    <li onclick="window.location.href='media.html'">Media</li>
+    <li onclick="window.location.href='contact.html'">Contact</li>
+    <li onclick="window.location.href='fan-experience.html'">Fan Zone</li>
+    <li class="nav-auth-btn" id="navLoginBtn" onclick="window.location.href='auth.html'"
+      style="background:var(--red);color:#fff;padding:6px 16px;margin-left:14px;font-weight:700;transition:all 0.2s;">
+      Sign In</li>
+  </ul>
+</nav>
+<div class="mega-wrapper" id="megaWrapper">
+  <div class="mega-menu"><div class="mega-menu-inner">
+    <h3>2026 Constructor Teams</h3>
+    <div class="teams-grid" id="megaTeamsGrid"></div>
+    <div class="mega-all-teams"><button onclick="goToAllTeams()">View All Teams →</button></div>
+  </div></div>
+</div>
+
+<section class="page-hero" style="padding-bottom:20px;">
+  <h1>2026 <b>Circuits</b></h1>
+  <p class="page-hero-sub">14 Formula 1 circuits with interactive track maps. Click any circuit to explore — animated racing line, sector times, DRS zones and corner speeds.</p>
+</section>
+
+<section class="circuits-page reveal-up">
+  <div class="circuits-legend">
+    <div class="legend-item"><div class="li-box" style="background:#2a2a2a;height:8px;"></div>Track</div>
+    <div class="legend-item"><div class="li-box" style="background:#E10600;"></div>Racing Line</div>
+    <div class="legend-item"><div class="li-box" style="background:#00D2BE;"></div>DRS Zone</div>
+    <div class="legend-item"><div class="li-box" style="background:var(--s1);"></div>Sector 1</div>
+    <div class="legend-item"><div class="li-box" style="background:var(--s2);"></div>Sector 2</div>
+    <div class="legend-item"><div class="li-box" style="background:var(--s3);"></div>Sector 3</div>
+    <div class="legend-item"><div class="li-dot" style="background:#E10600;">1</div>Corner</div>
+  </div>
+  <div class="circuits-grid" id="circuitsGrid"></div>
+</section>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <button class="modal-close-btn" onclick="closeModal()">✕ Close</button>
+    <div class="modal-canvas-col">
+      <div class="modal-canvas-header">
+        <span class="modal-round-tag" id="mRound">Round 1</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span id="mFlag" style="font-size:26px;"></span>
+          <div><div class="modal-title" id="mTitle"></div><div class="modal-sub" id="mSub"></div></div>
+        </div>
+      </div>
+      <div class="modal-canvas-wrap"><canvas id="modalCanvas"></canvas></div>
+      <div class="sector-strip">
+        <div class="sector-bar s1" id="sbar1"></div>
+        <div class="sector-bar s2" id="sbar2"></div>
+        <div class="sector-bar s3" id="sbar3"></div>
+      </div>
+      <div class="anim-controls">
+        <button class="anim-btn" onclick="replayAnimation()">▶ Replay</button>
+        <div class="anim-progress-wrap"><div class="anim-progress-fill" id="animProgress"></div></div>
+        <div class="sector-legend">
+          <span class="slabel"><span class="sdot" style="background:var(--s1)"></span>S1</span>
+          <span class="slabel"><span class="sdot" style="background:var(--s2)"></span>S2</span>
+          <span class="slabel"><span class="sdot" style="background:var(--s3)"></span>S3</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-info-col">
+      <div class="modal-section"><div class="modal-section-title">Circuit Stats</div><div class="modal-stats-grid" id="mStats"></div></div>
+      <div class="modal-section"><div class="modal-section-title">Sector Times (Best)</div><div class="sector-rows" id="mSectors"></div></div>
+      <div class="modal-section"><div class="modal-section-title">DRS Detection Zones</div><div class="drs-list" id="mDRS"></div></div>
+      <div class="modal-section"><div class="modal-section-title">Corner Guide</div><div class="corners-grid" id="mCorners"></div></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" class="f1-logo">
+        <path d="M1367.21 312.501C1379.83 312.501 1390.25 316.71 1398.5 325.168C1406.75 333.626 1410.88 344.001 1410.88 356.334C1410.88 368.667 1406.79 379.043 1398.58 387.418C1390.38 395.793 1380 400.001 1367.38 400.001C1354.75 400.001 1344.25 395.792 1335.92 387.334C1327.54 378.876 1323.38 368.501 1323.38 356.168C1323.38 343.835 1327.54 333.459 1335.83 325.084C1344.13 316.709 1354.59 312.501 1367.21 312.501ZM1167.04 149.792H635.292C501.959 149.792 473.584 160.083 403.667 227.875H403.708L226.292 400H0L281.542 120.583C386.208 17 436.667 4.27469e-06 615.125 0H1320.04L1167.04 149.792ZM1144.21 173.708L1003.96 313.958H641.125C574.625 313.958 559.917 317.083 526.917 350.083L477 400H267.167L422.292 244.875C483.209 184 504.209 173.708 638.5 173.708H1144.21ZM1600 0L1198.92 400H950.875L1350.88 0H1600ZM1367.13 319.376C1356.79 319.376 1348.13 322.96 1341.13 330.126C1334.17 337.293 1330.67 345.96 1330.67 356.168C1330.67 366.376 1334.17 375.042 1341.13 382.209C1348.09 389.376 1356.75 392.959 1367.13 392.959C1377.5 392.959 1386.13 389.418 1393.13 382.293C1400.09 375.168 1403.58 366.501 1403.58 356.251C1403.58 346.001 1400.09 337.293 1393.13 330.126C1386.17 322.959 1377.5 319.376 1367.13 319.376ZM1367.21 332.084C1373.5 332.084 1378.25 333.251 1381.42 335.626C1384.58 337.959 1386.17 341.501 1386.17 346.209C1386.17 350.917 1385.54 354.417 1384.25 356.709C1382.96 359.001 1380.79 360.834 1377.71 362.251L1386.83 380.668H1376.71L1368.42 363.501H1358.63L1358.58 363.459V380.626H1348.96V332.084H1367.21ZM1358.42 355.918H1368.21C1371.21 355.918 1373.38 355.293 1374.67 354.001C1376 352.709 1376.67 350.626 1376.67 347.751C1376.67 342.293 1373.25 339.584 1366.38 339.584H1358.42V355.918Z" fill="#E10600"/>
+      </svg>
+      <p>The official source for Formula 1 teams, drivers, and the 2026 season.</p>
+    </div>
+    <div class="footer-col"><h4>Racing</h4><ul><li onclick="window.location.href='schedule.html'">Schedule</li><li><a href="https://www.formula1.com/en/results/2026/races" target ="_blank">Race Results</a></li><li onclick="window.location.href='teams.html'">Standings</li></ul></div>
+    <div class="footer-col"><h4>Content</h4><ul><li onclick="window.location.href='news.html'">Latest News</li><li onclick="window.location.href='teams.html'">Teams</li><li onclick="window.location.href='drivers.html'">Drivers</li></ul></div>
+    <div class="footer-col"><h4>About</h4><ul><li><a href="https://www.formula1.com" target ="_blank">Formula 1</a></li><li><a href="https://www.fia.com" target="_blank">FIA</a></li><li onclick="window.location.href='teams.html'">Regulations</li><li onclick="window.location.href='contact.html'" style="cursor:pointer;">Contact</li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Formula One World Championship Limited. All rights reserved.</p>
+    <div class="footer-social"><a title="Twitter">𝕏</a><a title="Instagram">&#127760;</a><a title="YouTube">&#9654;</a></div>
+  </div>
+</footer>
+
+<script src="../js/data.js"></script>
+<script src="../js/script.js"></script>
+<script>
+const CIRCUITS=[{id:'bahrain',name:'Bahrain International Circuit',location:'Sakhir, Bahrain',flag:'🇧🇭',round:1,length:'5.412 km',laps:57,record:'1:31.447',corners:15,s1:'27.143',s2:'38.212',s3:'26.092',topSpeed:'321 km/h',drsZones:['Main straight (800m)','Back straight (650m)'],cornerSpeeds:['310','80','90','200','180','220','240','100','280','260','300','70','85','190','250'],pts:[[0.68,0.82],[0.86,0.82],[0.93,0.70],[0.91,0.55],[0.82,0.48],[0.72,0.48],[0.68,0.36],[0.74,0.20],[0.62,0.10],[0.46,0.12],[0.40,0.26],[0.44,0.38],[0.56,0.42],[0.50,0.54],[0.36,0.57],[0.22,0.50],[0.20,0.33],[0.10,0.29],[0.07,0.44],[0.15,0.56],[0.28,0.61],[0.28,0.73],[0.17,0.78],[0.10,0.73],[0.12,0.63],[0.26,0.68],[0.40,0.76],[0.56,0.82],[0.68,0.82]],drs:[[0,3],[20,24]],turns:[[1,1],[4,4],[7,7],[11,10],[14,13]],sectors:[[0,9],[10,19],[20,28]]},{id:'jeddah',name:'Jeddah Corniche Circuit',location:'Jeddah, Saudi Arabia',flag:'🇸🇦',round:2,length:'6.174 km',laps:50,record:'1:30.734',corners:27,s1:'28.990',s2:'30.112',s3:'31.632',topSpeed:'342 km/h',drsZones:['Straight 1 (900m)','Straight 2 (580m)'],cornerSpeeds:['320','75','80','290','270','310','85','90','260','240','300','70','80','95','280','260','240','220','200','180','300','280','260','90','85','80','75'],pts:[[0.74,0.80],[0.88,0.76],[0.93,0.62],[0.90,0.46],[0.84,0.32],[0.76,0.16],[0.62,0.10],[0.48,0.12],[0.40,0.22],[0.44,0.32],[0.55,0.35],[0.58,0.26],[0.48,0.20],[0.40,0.24],[0.37,0.34],[0.42,0.44],[0.54,0.48],[0.60,0.58],[0.56,0.68],[0.47,0.76],[0.36,0.80],[0.24,0.82],[0.14,0.74],[0.12,0.58],[0.16,0.44],[0.20,0.32],[0.17,0.20],[0.10,0.18],[0.08,0.32],[0.16,0.46],[0.26,0.56],[0.30,0.68],[0.26,0.78],[0.18,0.84],[0.30,0.88],[0.48,0.88],[0.64,0.86],[0.74,0.80]],drs:[[0,4],[13,17]],turns:[[0,1],[5,5],[10,10],[16,16],[22,22]],sectors:[[0,12],[13,24],[25,37]]},{id:'australia',name:'Albert Park Circuit',location:'Melbourne, Australia',flag:'🇦🇺',round:3,length:'5.278 km',laps:58,record:'1:19.813',corners:16,s1:'24.510',s2:'26.822',s3:'28.481',topSpeed:'318 km/h',drsZones:['Start/Finish straight (680m)','Back section (520m)'],cornerSpeeds:['290','230','80','85','270','260','300','280','90','95','240','220','200','180','260','280'],pts:[[0.52,0.14],[0.68,0.14],[0.78,0.20],[0.84,0.32],[0.82,0.46],[0.76,0.56],[0.72,0.66],[0.76,0.76],[0.70,0.84],[0.56,0.88],[0.42,0.86],[0.30,0.80],[0.22,0.70],[0.18,0.56],[0.16,0.42],[0.20,0.30],[0.30,0.20],[0.42,0.14],[0.52,0.14]],drs:[[0,3],[10,14]],turns:[[0,1],[3,3],[6,6],[8,8],[11,11],[15,15]],sectors:[[0,5],[6,11],[12,18]]},{id:'suzuka',name:'Suzuka International Racing Course',location:'Suzuka, Japan',flag:'🇯🇵',round:4,length:'5.807 km',laps:53,record:'1:30.983',corners:18,s1:'30.121',s2:'36.450',s3:'24.412',topSpeed:'316 km/h',drsZones:['Main straight (650m)','Back straight (490m)'],cornerSpeeds:['240','260','280','190','170','200','220','240','130','115','260','300','280','260','240','180','200','220'],pts:[[0.57,0.52],[0.68,0.44],[0.78,0.32],[0.82,0.18],[0.74,0.10],[0.62,0.10],[0.54,0.18],[0.52,0.30],[0.58,0.42],[0.68,0.50],[0.70,0.60],[0.62,0.68],[0.50,0.70],[0.38,0.66],[0.33,0.55],[0.36,0.44],[0.45,0.42],[0.53,0.48],[0.50,0.58],[0.40,0.68],[0.28,0.76],[0.16,0.72],[0.12,0.58],[0.16,0.46],[0.28,0.44],[0.38,0.48],[0.44,0.56],[0.42,0.66],[0.34,0.74],[0.24,0.72],[0.22,0.62],[0.28,0.56],[0.40,0.58],[0.48,0.64],[0.56,0.68],[0.64,0.64],[0.70,0.56],[0.65,0.52],[0.57,0.52]],drs:[[0,2],[20,24]],turns:[[0,1],[3,3],[7,7],[12,11],[14,13],[22,16]],sectors:[[0,12],[13,25],[26,38]]},{id:'monaco',name:'Circuit de Monaco',location:'Monte-Carlo, Monaco',flag:'🇲🇨',round:8,length:'3.337 km',laps:78,record:'1:12.909',corners:19,s1:'22.340',s2:'28.812',s3:'21.757',topSpeed:'289 km/h',drsZones:['Tunnel exit (320m)'],cornerSpeeds:['290','70','65','250','240','220','200','180','75','70','220','200','180','65','60','280','270','260','240'],pts:[[0.78,0.50],[0.90,0.48],[0.93,0.36],[0.85,0.23],[0.68,0.18],[0.52,0.22],[0.38,0.16],[0.22,0.24],[0.16,0.40],[0.19,0.58],[0.12,0.66],[0.14,0.78],[0.28,0.83],[0.38,0.74],[0.52,0.74],[0.60,0.82],[0.50,0.88],[0.35,0.87],[0.27,0.80],[0.32,0.73],[0.44,0.76],[0.54,0.78],[0.62,0.72],[0.70,0.62],[0.76,0.56],[0.78,0.50]],drs:[[0,2]],turns:[[0,1],[4,3],[8,6],[12,10],[16,16],[19,19]],sectors:[[0,7],[8,15],[16,25]]},{id:'silverstone',name:'Silverstone Circuit',location:'Northamptonshire, UK',flag:'🇬🇧',round:12,length:'5.891 km',laps:52,record:'1:27.097',corners:18,s1:'27.850',s2:'37.640',s3:'21.607',topSpeed:'334 km/h',drsZones:['Wellington straight (900m)','Hangar straight (820m)'],cornerSpeeds:['310','290','280','260','300','270','250','220','200','260','280','300','310','290','280','260','300','280'],pts:[[0.50,0.83],[0.66,0.83],[0.76,0.76],[0.82,0.62],[0.84,0.48],[0.76,0.36],[0.82,0.24],[0.78,0.12],[0.62,0.10],[0.47,0.14],[0.35,0.14],[0.22,0.10],[0.12,0.20],[0.10,0.36],[0.14,0.50],[0.22,0.58],[0.18,0.68],[0.12,0.74],[0.18,0.82],[0.30,0.86],[0.42,0.86],[0.50,0.83]],drs:[[0,2],[8,11]],turns:[[0,1],[4,6],[7,9],[10,13],[15,15],[18,18]],sectors:[[0,6],[7,13],[14,21]]},{id:'spa',name:'Circuit de Spa-Francorchamps',location:'Stavelot, Belgium',flag:'🇧🇪',round:13,length:'7.004 km',laps:44,record:'1:46.286',corners:19,s1:'34.612',s2:'48.140',s3:'23.534',topSpeed:'355 km/h',drsZones:['Kemmel straight (900m)','Start straight (700m)'],cornerSpeeds:['290','200','180','300','310','280','260','240','260','280','240','220','200','180','260','280','300','280','260'],pts:[[0.50,0.30],[0.62,0.24],[0.72,0.18],[0.82,0.22],[0.88,0.32],[0.82,0.40],[0.74,0.36],[0.68,0.44],[0.74,0.54],[0.84,0.62],[0.86,0.72],[0.78,0.78],[0.66,0.76],[0.54,0.70],[0.44,0.76],[0.36,0.80],[0.26,0.76],[0.20,0.66],[0.18,0.52],[0.22,0.40],[0.30,0.34],[0.38,0.28],[0.50,0.30]],drs:[[0,4],[14,18]],turns:[[0,1],[4,4],[8,8],[11,11],[15,14],[19,19]],sectors:[[0,7],[8,14],[15,22]]},{id:'monza',name:'Autodromo Nazionale Monza',location:'Monza, Italy',flag:'🇮🇹',round:16,length:'5.793 km',laps:53,record:'1:21.046',corners:11,s1:'29.240',s2:'30.110',s3:'21.696',topSpeed:'362 km/h',drsZones:['Main straight (1030m)','Back straight (780m)'],cornerSpeeds:['300','75','80','260','280','85','90','310','280','70','75'],pts:[[0.25,0.18],[0.44,0.18],[0.47,0.25],[0.42,0.30],[0.52,0.30],[0.55,0.23],[0.60,0.18],[0.76,0.18],[0.86,0.30],[0.86,0.52],[0.80,0.64],[0.82,0.76],[0.70,0.84],[0.50,0.86],[0.32,0.82],[0.20,0.70],[0.20,0.54],[0.26,0.44],[0.20,0.36],[0.14,0.42],[0.14,0.56],[0.20,0.62],[0.18,0.72],[0.12,0.70],[0.12,0.52],[0.20,0.40],[0.25,0.32],[0.20,0.24],[0.25,0.18]],drs:[[0,6],[10,14]],turns:[[1,1],[4,4],[8,5],[12,8],[15,10]],sectors:[[0,9],[10,18],[19,28]]},{id:'singapore',name:'Marina Bay Street Circuit',location:'Singapore',flag:'🇸🇬',round:18,length:'4.940 km',laps:62,record:'1:35.867',corners:23,s1:'33.810',s2:'38.620',s3:'23.437',topSpeed:'296 km/h',drsZones:['Pit straight (800m)','Section 2 (480m)'],cornerSpeeds:['280','75','70','240','220','200','180','160','75','70','65','220','200','180','160','75','70','200','220','240','260','280','260'],pts:[[0.60,0.22],[0.74,0.18],[0.84,0.24],[0.88,0.36],[0.82,0.46],[0.70,0.50],[0.60,0.56],[0.54,0.66],[0.58,0.76],[0.66,0.82],[0.62,0.88],[0.48,0.86],[0.36,0.80],[0.28,0.70],[0.24,0.58],[0.18,0.50],[0.12,0.42],[0.14,0.30],[0.22,0.22],[0.34,0.18],[0.46,0.20],[0.56,0.24],[0.60,0.22]],drs:[[0,3],[13,17]],turns:[[0,1],[4,4],[8,8],[12,13],[17,18],[20,23]],sectors:[[0,7],[8,15],[16,22]]},{id:'cota',name:'Circuit of the Americas',location:'Austin, Texas, USA',flag:'🇺🇸',round:19,length:'5.513 km',laps:56,record:'1:36.169',corners:20,s1:'35.210',s2:'42.130',s3:'18.829',topSpeed:'318 km/h',drsZones:['Main straight (1000m)','Back straight (600m)'],cornerSpeeds:['280','220','200','180','260','240','220','200','180','200','220','240','260','280','80','85','90','300','280','260'],pts:[[0.46,0.68],[0.62,0.66],[0.76,0.60],[0.86,0.48],[0.88,0.34],[0.80,0.22],[0.66,0.16],[0.52,0.16],[0.40,0.20],[0.32,0.28],[0.24,0.22],[0.16,0.28],[0.12,0.40],[0.16,0.52],[0.24,0.58],[0.32,0.52],[0.40,0.58],[0.34,0.68],[0.26,0.76],[0.18,0.82],[0.16,0.88],[0.28,0.88],[0.40,0.84],[0.48,0.76],[0.46,0.68]],drs:[[0,4],[12,16]],turns:[[0,1],[4,4],[8,8],[11,11],[15,15],[19,20]],sectors:[[0,8],[9,16],[17,24]]},{id:'abudhabi',name:'Yas Marina Circuit',location:'Abu Dhabi, UAE',flag:'🇦🇪',round:24,length:'5.281 km',laps:58,record:'1:26.103',corners:16,s1:'28.810',s2:'38.920',s3:'18.373',topSpeed:'328 km/h',drsZones:['Main straight (780m)','Marina section (620m)'],cornerSpeeds:['300','280','240','75','80','260','280','300','280','260','240','220','200','180','260','280'],pts:[[0.52,0.44],[0.66,0.40],[0.78,0.32],[0.86,0.22],[0.82,0.14],[0.70,0.12],[0.58,0.16],[0.50,0.26],[0.54,0.36],[0.64,0.36],[0.70,0.28],[0.78,0.30],[0.80,0.40],[0.74,0.50],[0.62,0.54],[0.50,0.58],[0.38,0.64],[0.28,0.72],[0.20,0.80],[0.16,0.86],[0.24,0.88],[0.38,0.84],[0.46,0.76],[0.50,0.66],[0.52,0.56],[0.52,0.44]],drs:[[0,3],[14,18]],turns:[[0,1],[4,4],[8,8],[11,11],[15,14],[19,16]],sectors:[[0,8],[9,17],[18,25]]}];
+
+function scalePoints(pts,W,H,pad){return pts.map(([x,y])=>[pad+x*(W-2*pad),pad+y*(H-2*pad)]);}
+function drawSmoothClosed(ctx,pts){const n=pts.length,get=i=>pts[((i%n)+n)%n];ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=0;i<n;i++){const p0=get(i-1),p1=get(i),p2=get(i+1),p3=get(i+2);ctx.bezierCurveTo(p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6,p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6,p2[0],p2[1]);}ctx.closePath();}
+function drawSmoothSeg(ctx,pts,from,to){const n=pts.length,get=i=>pts[((i%n)+n)%n];const seg=[];for(let i=from;i<=to+1;i++)seg.push(get(i));if(seg.length<2)return;ctx.beginPath();ctx.moveTo(seg[0][0],seg[0][1]);for(let i=0;i<seg.length-1;i++){const p0=seg[Math.max(i-1,0)],p1=seg[i],p2=seg[i+1],p3=seg[Math.min(i+2,seg.length-1)];ctx.bezierCurveTo(p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6,p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6,p2[0],p2[1]);}}
+
+function renderCircuit(canvas,circuit){
+  const dpr=window.devicePixelRatio||1,W=canvas.clientWidth||400,H=Math.round(W*0.56);
+  canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.fillStyle='#080808';ctx.fillRect(0,0,W,H);
+  ctx.font=`bold ${H*0.55}px Orbitron,sans-serif`;ctx.fillStyle='rgba(255,255,255,0.018)';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(circuit.id.toUpperCase(),W/2,H/2);
+  const PAD=Math.round(W*0.05),scaled=scalePoints(circuit.pts,W,H,PAD),n=scaled.length,get=i=>scaled[((i%n)+n)%n],trackW=Math.max(10,W*0.046);
+  [{color:'#363636',w:1.0},{color:'#2a2a2a',w:0.78},{color:'#181818',w:0.54}].forEach(({color,w})=>{ctx.strokeStyle=color;ctx.lineWidth=trackW*w;ctx.lineCap='round';ctx.lineJoin='round';drawSmoothClosed(ctx,scaled);ctx.stroke();});
+  ctx.strokeStyle='rgba(255,255,255,0.16)';ctx.lineWidth=0.8;drawSmoothClosed(ctx,scaled);ctx.stroke();
+  circuit.drs.forEach(([s,e])=>{ctx.strokeStyle='rgba(0,210,190,0.75)';ctx.lineWidth=trackW*0.36;ctx.lineCap='round';drawSmoothSeg(ctx,scaled,s,e);ctx.stroke();});
+  ctx.shadowColor='rgba(225,6,0,0.4)';ctx.shadowBlur=6;ctx.strokeStyle='rgba(225,6,0,0.65)';ctx.lineWidth=Math.max(1.5,W*0.0028);drawSmoothClosed(ctx,scaled);ctx.stroke();ctx.shadowBlur=0;
+  const sf=scaled[0],sf1=scaled[1],dx=sf1[0]-sf[0],dy=sf1[1]-sf[1],len=Math.sqrt(dx*dx+dy*dy)||1,nx=-dy/len,ny=dx/len,sq=3.5;ctx.save();
+  for(let r=0;r<2;r++)for(let c=0;c<4;c++){ctx.fillStyle=(r+c)%2===0?'#fff':'#000';ctx.fillRect(sf[0]+nx*(c-2)*sq-sq/2,sf[1]+ny*(c-2)*sq+r*sq-sq,sq,sq);}ctx.restore();
+  const tW=Math.max(6,W*0.018);
+  circuit.turns.forEach(([idx,num])=>{const pt=get(idx),prev=get(idx-1),next=get(idx+1),tdx=next[0]-prev[0],tdy=next[1]-prev[1],tl=Math.sqrt(tdx*tdx+tdy*tdy)||1,cx=pt[0]+(-tdy/tl)*trackW*0.8,cy=pt[1]+(tdx/tl)*trackW*0.8;ctx.beginPath();ctx.arc(cx,cy,tW,0,Math.PI*2);ctx.fillStyle='#E10600';ctx.fill();ctx.font=`bold ${Math.max(6,tW*1.1)}px Orbitron,sans-serif`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(num),cx,cy);});
+}
+
+let animRAF=null,currentCircuit=null;
+function samplePath(pts,samples){const n=pts.length,get=i=>pts[((i%n)+n)%n],result=[],sp=Math.ceil(samples/n);for(let i=0;i<n;i++){const p0=get(i-1),p1=get(i),p2=get(i+1),p3=get(i+2),cp1x=p1[0]+(p2[0]-p0[0])/6,cp1y=p1[1]+(p2[1]-p0[1])/6,cp2x=p2[0]-(p3[0]-p1[0])/6,cp2y=p2[1]-(p3[1]-p1[1])/6;for(let j=0;j<sp;j++){const t=j/sp,mt=1-t;result.push({x:mt*mt*mt*p1[0]+3*mt*mt*t*cp1x+3*mt*t*t*cp2x+t*t*t*p2[0],y:mt*mt*mt*p1[1]+3*mt*mt*t*cp1y+3*mt*t*t*cp2y+t*t*t*p2[1]});}}return result;}
+
+function animateModal(circuit){
+  if(animRAF)cancelAnimationFrame(animRAF);
+  const canvas=document.getElementById('modalCanvas'),dpr=window.devicePixelRatio||1,W=canvas.clientWidth||680,H=Math.round(W*0.56);
+  canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  const PAD=Math.round(W*0.05),scaled=scalePoints(circuit.pts,W,H,PAD),n=scaled.length,get=i=>scaled[((i%n)+n)%n],trackW=Math.max(14,W*0.046);
+  const SC=['rgba(245,197,24,0.35)','rgba(39,201,63,0.35)','rgba(180,79,255,0.35)'],RC=['rgba(245,197,24,0.9)','rgba(39,201,63,0.9)','rgba(180,79,255,0.9)'];
+  function drawBase(){
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#080808';ctx.fillRect(0,0,W,H);
+    ctx.font=`bold ${H*0.55}px Orbitron,sans-serif`;ctx.fillStyle='rgba(255,255,255,0.018)';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(circuit.id.toUpperCase(),W/2,H/2);
+    [{color:'#363636',w:1.0},{color:'#2a2a2a',w:0.78},{color:'#181818',w:0.54}].forEach(({color,w})=>{ctx.strokeStyle=color;ctx.lineWidth=trackW*w;ctx.lineCap='round';ctx.lineJoin='round';drawSmoothClosed(ctx,scaled);ctx.stroke();});
+    if(circuit.sectors)circuit.sectors.forEach(([fs,fe],si)=>{ctx.strokeStyle=SC[si];ctx.lineWidth=trackW*0.56;ctx.lineCap='round';ctx.lineJoin='round';drawSmoothSeg(ctx,scaled,fs,fe);ctx.stroke();});
+    ctx.strokeStyle='rgba(255,255,255,0.16)';ctx.lineWidth=0.8;drawSmoothClosed(ctx,scaled);ctx.stroke();
+    circuit.drs.forEach(([s,e])=>{ctx.strokeStyle='rgba(0,210,190,0.65)';ctx.lineWidth=trackW*0.34;ctx.lineCap='round';drawSmoothSeg(ctx,scaled,s,e);ctx.stroke();});
+    const sf=scaled[0],sf1=scaled[1],dx=sf1[0]-sf[0],dy=sf1[1]-sf[1],len=Math.sqrt(dx*dx+dy*dy)||1,nx=-dy/len,ny=dx/len,sq=4;ctx.save();
+    for(let r=0;r<2;r++)for(let c=0;c<4;c++){ctx.fillStyle=(r+c)%2===0?'#fff':'#000';ctx.fillRect(sf[0]+nx*(c-2)*sq-sq/2,sf[1]+ny*(c-2)*sq+r*sq-sq,sq,sq);}ctx.restore();
+    const tW=Math.max(8,W*0.02);
+    circuit.turns.forEach(([idx,num])=>{const pt=get(idx),prev=get(idx-1),next=get(idx+1),tdx=next[0]-prev[0],tdy=next[1]-prev[1],tl=Math.sqrt(tdx*tdx+tdy*tdy)||1,cx=pt[0]+(-tdy/tl)*trackW*0.8,cy=pt[1]+(tdx/tl)*trackW*0.8;ctx.beginPath();ctx.arc(cx,cy,tW,0,Math.PI*2);ctx.fillStyle='#E10600';ctx.fill();ctx.font=`bold ${Math.max(8,tW*1.1)}px Orbitron,sans-serif`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(num),cx,cy);});
+  }
+  const pathPts=samplePath(scaled,800),total=pathPts.length;let drawn=0;const speed=total/120;
+  function getSC(progress){if(!circuit.sectors)return'rgba(225,6,0,0.85)';const si2=Math.floor((progress/total)*circuit.pts.length);for(let si=0;si<circuit.sectors.length;si++){const[fs,fe]=circuit.sectors[si];if(si2>=fs&&si2<=fe)return RC[si];}return'rgba(225,6,0,0.85)';}
+  function frame(){
+    drawBase();
+    if(drawn>1){let i=0;while(i<drawn){const col=getSC(i);let j=i+1;while(j<drawn&&getSC(j)===col)j++;ctx.beginPath();ctx.moveTo(pathPts[i].x,pathPts[i].y);for(let k=i+1;k<j&&k<drawn;k++)ctx.lineTo(pathPts[k].x,pathPts[k].y);ctx.strokeStyle=col;ctx.lineWidth=Math.max(2,W*0.003);ctx.lineCap='round';ctx.shadowColor=col;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;i=j;}}
+    document.getElementById('animProgress').style.width=Math.min(drawn/total*100,100)+'%';
+    const si2=Math.floor((drawn/total)*circuit.pts.length);
+    if(circuit.sectors)circuit.sectors.forEach(([fs,fe],si)=>{document.getElementById('sbar'+(si+1)).classList.toggle('inactive',!(si2>=fs&&si2<=fe));});
+    if(drawn<total){drawn=Math.min(drawn+speed,total);animRAF=requestAnimationFrame(frame);}
+    else{['sbar1','sbar2','sbar3'].forEach(id=>document.getElementById(id).classList.remove('inactive'));}
+  }
+  drawBase();animRAF=requestAnimationFrame(frame);
+}
+
+function openModal(c){
+  currentCircuit=c;
+  document.getElementById('mRound').textContent='Round '+c.round;
+  document.getElementById('mFlag').textContent=c.flag;
+  document.getElementById('mTitle').textContent=c.name;
+  document.getElementById('mSub').textContent=c.location+' · '+c.corners+' corners';
+  document.getElementById('mStats').innerHTML=`<div class="mstat"><div class="ml">Length</div><div class="mv">${c.length}</div></div><div class="mstat"><div class="ml">Laps</div><div class="mv">${c.laps}</div></div><div class="mstat"><div class="ml">Lap Record</div><div class="mv" style="font-size:12px">${c.record}</div></div><div class="mstat"><div class="ml">Top Speed</div><div class="mv" style="font-size:12px">${c.topSpeed}</div></div>`;
+  document.getElementById('mSectors').innerHTML=`<div class="sector-row"><span class="sector-dot" style="background:var(--s1)"></span><div><div class="sector-row-label">Sector 1</div></div><div class="sector-row-time">${c.s1}</div></div><div class="sector-row"><span class="sector-dot" style="background:var(--s2)"></span><div><div class="sector-row-label">Sector 2</div></div><div class="sector-row-time">${c.s2}</div></div><div class="sector-row"><span class="sector-dot" style="background:var(--s3)"></span><div><div class="sector-row-label">Sector 3</div></div><div class="sector-row-time">${c.s3}</div></div>`;
+  document.getElementById('mDRS').innerHTML=c.drsZones.map((z,i)=>`<div class="drs-item"><span class="drs-item-label">DRS ${i+1} · ${z.split('(')[0].trim()}</span><span class="drs-item-len">${z.match(/\(([^)]+)\)/)?.[1]||''}</span></div>`).join('');
+  document.getElementById('mCorners').innerHTML=Array.from({length:c.corners},(_,i)=>`<div class="corner-chip"><div class="cn">${i+1}</div><div class="ct">${c.cornerSpeeds[i]||'—'}</div></div>`).join('');
+  ['sbar1','sbar2','sbar3'].forEach(id=>document.getElementById(id).classList.remove('inactive'));
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>animateModal(c),80);
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');document.body.style.overflow='';if(animRAF){cancelAnimationFrame(animRAF);animRAF=null;}}
+function handleOverlayClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+function replayAnimation(){if(currentCircuit)animateModal(currentCircuit);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+const grid=document.getElementById('circuitsGrid');
+CIRCUITS.forEach(c=>{
+  const card=document.createElement('div');card.className='circuit-card';card.onclick=()=>openModal(c);
+  card.innerHTML=`<div class="cc-canvas-wrap"><canvas id="canvas-${c.id}"></canvas><div class="cc-round-badge">Round ${c.round}</div><div class="cc-flag">${c.flag}</div><span class="cc-sf-badge">S/F</span><span class="cc-hint">Click to explore →</span></div><div class="cc-info"><div class="cc-name">${c.name}</div><div class="cc-location">${c.location}</div><div class="cc-stats"><div class="cc-stat"><div class="cc-stat-label">Length</div><div class="cc-stat-val">${c.length}</div></div><div class="cc-stat"><div class="cc-stat-label">Laps</div><div class="cc-stat-val">${c.laps}</div></div><div class="cc-stat"><div class="cc-stat-label">Corners</div><div class="cc-stat-val">${c.corners}</div></div><div class="cc-stat"><div class="cc-stat-label">Record</div><div class="cc-stat-val" style="font-size:10px">${c.record}</div></div></div></div>`;
+  grid.appendChild(card);
+});
+
+function renderAll(){CIRCUITS.forEach(c=>{const cv=document.getElementById('canvas-'+c.id);if(cv)renderCircuit(cv,c);});}
+window.addEventListener('load',renderAll);
+window.addEventListener('resize',renderAll);
+renderMegaMenu();
+initScrollObserver();
+</script>
+</body>
+</html>
