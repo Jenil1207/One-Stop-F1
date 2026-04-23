@@ -825,6 +825,27 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script>
+    // --- FIREBASE SETUP --- //
+    // TODO: Paste your actual Firebase configuration below:
+    const firebaseConfig = {
+      apiKey: "AIzaSyC1ribLhm6znb809QE4V5Ll9XJFitFie3c",
+      authDomain: "one-stop-f1.firebaseapp.com",
+      projectId: "one-stop-f1",
+      storageBucket: "one-stop-f1.firebasestorage.app",
+      messagingSenderId: "331675628265",
+      appId: "1:331675628265:web:d14732472c5dff3c597678",
+      measurementId: "G-326G3L7401"
+    };
+
+    let auth = null;
+    if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+    }
+  </script>
   <script>
     function switchTab(t) {
       ['signin', 'signup'].forEach(id => {
@@ -902,17 +923,79 @@
       });
     });
 
+    function checkFirebase() {
+      if (!auth) {
+        toast("Firebase config is missing or invalid. Add it in auth.html.", true);
+        return false;
+      }
+      return true;
+    }
+
+    function syncToBackendAndComplete(payload, btnContext, defaultName) {
+      fetch('http://127.0.0.1:8000/api/auth/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Backend sync failed.");
+          return res.json();
+        })
+        .then(data => {
+          saveSession({
+            user_id: data.user_id,
+            name: data.display_name,
+            email: data.email,
+            avatar: data.display_name.slice(0, 2).toUpperCase(),
+            color: data.favorite_team || '#E10600',
+            drivers: data.favorite_drivers ? JSON.parse(data.favorite_drivers) : []
+          });
+          toast('Welcome, ' + data.display_name.split(' ')[0] + '! 🏎️');
+          setTimeout(() => window.location.href = 'index.html', 1600);
+        })
+        .catch(err => {
+          if (btnContext) {
+            btnContext.btn.textContent = btnContext.text;
+            btnContext.btn.classList.remove('loading');
+          }
+          toast(err.message, true);
+        });
+    }
+
     function socialLogin(provider) {
-      toast(provider + " login is currently disabled for local environment.", true);
+      if (!checkFirebase()) return;
+      if (provider !== 'Google') {
+        toast(provider + " login is not configured.", true);
+        return;
+      }
+      const p = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(p)
+        .then((result) => {
+          const user = result.user;
+          syncToBackendAndComplete({
+            uid: user.uid,
+            email: user.email,
+            display_name: user.displayName || "Racer",
+            favorite_team: null
+          }, null, user.displayName);
+        }).catch((error) => {
+          toast(error.message, true);
+        });
     }
 
     function forgotPw() {
-      toast("Email functionality is disabled locally.", true);
+      if (!checkFirebase()) return;
+      const email = document.getElementById('si-email').value.trim();
+      if (!email) return validate('si-email', 'err-si-email', false);
+      firebase.auth().sendPasswordResetEmail(email)
+        .then(() => toast("Password reset email sent!"))
+        .catch(err => toast(err.message, true));
     }
 
     function saveSession(user) { localStorage.setItem('f1_user', JSON.stringify(user)); }
 
     function doSignIn() {
+      if (!checkFirebase()) return;
       const email = document.getElementById('si-email').value.trim();
       const pw = document.getElementById('si-pw').value;
       const btn = document.getElementById('btn-signin');
@@ -920,34 +1003,24 @@
 
       btn.textContent = 'Signing In…'; btn.classList.add('loading');
 
-      fetch('http://127.0.0.1:8000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: pw })
-      })
-      .then(res => {
-         if (!res.ok) throw new Error("Invalid email or password.");
-         return res.json();
-      })
-      .then(data => {
-        saveSession({
-          user_id: data.user_id,
-          name: data.display_name,
-          email: data.email,
-          avatar: data.display_name.slice(0, 2).toUpperCase(),
-          color: data.favorite_team || '#E10600',
-          drivers: data.favorite_drivers ? JSON.parse(data.favorite_drivers) : []
+      auth.signInWithEmailAndPassword(email, pw)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          syncToBackendAndComplete({
+            uid: user.uid,
+            email: user.email,
+            display_name: user.displayName || email.split('@')[0],
+            favorite_team: null
+          }, { btn: btn, text: 'Sign In →' }, user.displayName);
+        })
+        .catch((error) => {
+          btn.textContent = 'Sign In →'; btn.classList.remove('loading');
+          toast(error.message, true);
         });
-        toast('Welcome back, ' + data.display_name.split(' ')[0] + '!');
-        setTimeout(() => window.location.href = 'index.html', 1600);
-      })
-      .catch(err => {
-        btn.textContent = 'Sign In →'; btn.classList.remove('loading');
-        toast(err.message, true);
-      });
     }
 
     function doSignUp() {
+      if (!checkFirebase()) return;
       const fname = document.getElementById('su-fname').value.trim();
       const lname = document.getElementById('su-lname').value.trim();
       const email = document.getElementById('su-email').value.trim();
@@ -960,46 +1033,31 @@
 
       const selectedPill = document.querySelector('.team-pill.selected');
       const teamColor = selectedPill ? selectedPill.dataset.teamColor : '#E10600';
+      const dName = fname + ' ' + lname;
 
       btn.textContent = 'Creating Account…'; btn.classList.add('loading');
 
-      const payload = {
-        email: email,
-        password: pw,
-        first_name: fname,
-        last_name: lname,
-        favorite_team: teamColor
-      };
-
-      fetch('http://127.0.0.1:8000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      .then(res => {
-         if (!res.ok) throw new Error("Account with this email already exists.");
-         return res.json();
-      })
-      .then(data => {
-        saveSession({
-          user_id: data.user_id,
-          name: data.display_name,
-          email: data.email,
-          avatar: (fname[0] + lname[0]).toUpperCase(),
-          color: data.favorite_team,
-          drivers: []
+      auth.createUserWithEmailAndPassword(email, pw)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          return user.updateProfile({ displayName: dName }).then(() => user);
+        })
+        .then((user) => {
+          syncToBackendAndComplete({
+            uid: user.uid,
+            email: user.email,
+            display_name: dName,
+            favorite_team: teamColor
+          }, { btn: btn, text: 'Create Account →' }, dName);
+        })
+        .catch((error) => {
+          btn.textContent = 'Create Account →'; btn.classList.remove('loading');
+          toast(error.message, true);
         });
-        toast('Welcome to F1 2025, ' + fname + '! 🏎️');
-        setTimeout(() => window.location.href = 'index.html', 1800);
-      })
-      .catch(err => {
-        btn.textContent = 'Create Account →'; btn.classList.remove('loading');
-        toast(err.message, true);
-      });
     }
   </script>
   <script src="../js/jolpica.js"></script>
-    <script src="../js/data.js"></script>
+  <script src="../js/data.js"></script>
   <script src="../js/script.js"></script>
 </body>
 

@@ -64,19 +64,11 @@ def init_db():
 
 init_db()
 
-def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
-
-class AuthRegister(BaseModel):
+class FirebaseUserSync(BaseModel):
+    uid: str
     email: str
-    password: str
-    first_name: str
-    last_name: str
+    display_name: str
     favorite_team: Optional[str] = None
-
-class AuthLogin(BaseModel):
-    email: str
-    password: str
 
 class UserProfile(BaseModel):
     user_id: str
@@ -98,49 +90,36 @@ class FantasyTeam(BaseModel):
 def health_check():
     return {"status": "ok", "message": "F1 2026 API is running!"}
 
-@app.post("/api/auth/register", response_model=dict)
-def register(req: AuthRegister, db: sqlite3.Connection = Depends(get_db)):
+@app.post("/api/auth/sync", response_model=dict)
+def sync_firebase_user(req: FirebaseUserSync, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
-    cursor.execute("SELECT email FROM users WHERE email=?", (req.email,))
-    if cursor.fetchone():
-        raise HTTPException(status_code=400, detail="Account with this email already exists.")
-        
-    user_id = str(uuid.uuid4())
-    display_name = f"{req.first_name} {req.last_name}".strip()
-    pwd_hash = hash_password(req.password)
-    
-    cursor.execute('''
-        INSERT INTO users (user_id, email, password_hash, display_name, favorite_team, favorite_drivers)
-        VALUES (?, ?, ?, ?, ?, '[]')
-    ''', (user_id, req.email, pwd_hash, display_name, req.favorite_team))
-    db.commit()
-    return {
-        "status": "success", 
-        "user_id": user_id, 
-        "email": req.email, 
-        "display_name": display_name,
-        "favorite_team": req.favorite_team,
-        "favorite_drivers": "[]",
-        "token": "mock_session_token_" + str(user_id)
-    }
-
-@app.post("/api/auth/login", response_model=dict)
-def login(req: AuthLogin, db: sqlite3.Connection = Depends(get_db)):
-    cursor = db.cursor()
-    cursor.execute("SELECT user_id, email, password_hash, display_name, favorite_team, favorite_drivers FROM users WHERE email=?", (req.email,))
+    cursor.execute("SELECT * FROM users WHERE user_id=?", (req.uid,))
     user = cursor.fetchone()
     
-    if not user or user["password_hash"] != hash_password(req.password):
-        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    if user:
+        cursor.execute('''
+            UPDATE users SET email=?, display_name=?
+            WHERE user_id=?
+        ''', (req.email, req.display_name, req.uid))
+    else:
+        cursor.execute('''
+            INSERT INTO users (user_id, email, password_hash, display_name, favorite_team, favorite_drivers)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (req.uid, req.email, "FIREBASE_AUTH", req.display_name, req.favorite_team, "[]"))
         
+    db.commit()
+    
+    cursor.execute("SELECT * FROM users WHERE user_id=?", (req.uid,))
+    updated_user = cursor.fetchone()
+
     return {
-        "status": "success",
-        "user_id": user["user_id"],
-        "email": user["email"],
-        "display_name": user["display_name"],
-        "favorite_team": user["favorite_team"],
-        "favorite_drivers": user["favorite_drivers"],
-        "token": "mock_session_token_" + str(user["user_id"])
+        "status": "success", 
+        "user_id": updated_user["user_id"], 
+        "email": updated_user["email"], 
+        "display_name": updated_user["display_name"],
+        "favorite_team": updated_user["favorite_team"],
+        "favorite_drivers": updated_user["favorite_drivers"],
+        "token": "firebase_session_" + str(updated_user["user_id"])
     }
 
 @app.post("/api/users", response_model=dict)
@@ -205,7 +184,7 @@ def check_admin(user_id: str, db: sqlite3.Connection):
     cursor = db.cursor()
     cursor.execute("SELECT email FROM users WHERE user_id = ?", (user_id,))
     user = cursor.fetchone()
-    if not user or user["email"] != "test@example.com":
+    if not user or user["email"].lower() != "yavishtt.b@somaiya.edu":
         raise HTTPException(status_code=403, detail="Not authorized as admin")
 
 @app.get("/api/admin/fantasy_teams")
@@ -242,9 +221,11 @@ def admin_delete_team(team_id: int, admin_user_id: str, db: sqlite3.Connection =
     db.commit()
     return {"status": "success"}
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/")
 def read_root():
-    return FileResponse(os.path.join(os.path.dirname(__file__), "..", "index.html"))
+    return RedirectResponse(url="/frontend/pages/index.html")
 
 app.mount("/", StaticFiles(directory=os.path.join(os.path.dirname(__file__), ".."), html=True), name="static")
 

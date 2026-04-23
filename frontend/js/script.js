@@ -317,7 +317,13 @@ function renderArticle() {
 function renderTeamsPage() {
   const c = document.getElementById("teamsContainer");
   if (!c || typeof teamsData === "undefined") return;
-  c.innerHTML = Object.keys(teamsData).map(key => {
+  const sortedTeamKeys = Object.keys(teamsData).sort((a, b) => {
+    const ptA = teamsData[a].points || 0;
+    const ptB = teamsData[b].points || 0;
+    return ptB - ptA;
+  });
+
+  c.innerHTML = sortedTeamKeys.map(key => {
     const t = teamsData[key];
     return `
       <div class="team-page-card" onclick="goToTeam('${key}')">
@@ -806,7 +812,12 @@ function renderDriversPage() {
   const grid = document.getElementById('driversGrid');
   if (!grid || typeof driversData === 'undefined') return;
 
-  grid.innerHTML = driversData.map((driver, idx) => {
+  const sortedDriversWithIndex = driversData.map((d, i) => ({ driver: d, originalIndex: i }))
+    .sort((a, b) => (b.driver.points || 0) - (a.driver.points || 0));
+
+  grid.innerHTML = sortedDriversWithIndex.map((item) => {
+    const driver = item.driver;
+    const idx = item.originalIndex;
     const key = Object.keys(teamsData).find(k => teamsData[k].logo === driver.teamLogo);
     const color = key ? teamsData[key].color : '#e10600';
     return `
@@ -924,7 +935,7 @@ document.addEventListener('DOMContentLoaded', () => {
           window.location.reload();
         };
 
-        if (f1User.email === 'test@example.com') {
+        if (f1User.email && f1User.email.toLowerCase() === 'yavishtt.b@somaiya.edu') {
           const navLinks = document.querySelector('.nav-links');
           if (navLinks && !document.getElementById('navAdminBtn')) {
             const adminLi = document.createElement('li');
@@ -1194,16 +1205,16 @@ async function attachJolpicaLayer() {
           isNextFound = true;
         }
         return {
-          round: "Round " + String(i+1).padStart(2, '0'),
+          round: "Round " + String(i + 1).padStart(2, '0'),
           name: r.raceName,
           circuit: r.Circuit.circuitName,
           country: r.Circuit.Location.country,
-          flag: r.Circuit.Location.country.substring(0,3).toUpperCase(),
-          date: rdate.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'}),
+          flag: r.Circuit.Location.country.substring(0, 3).toUpperCase(),
+          date: rdate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
           laps: 50,
           distance: "300 km",
           status: status,
-          winner: null 
+          winner: null
         };
       });
     }
@@ -1218,11 +1229,14 @@ async function attachJolpicaLayer() {
     if (typeof initCompare === 'function' && document.getElementById("compareDriverA")) initCompare();
     if (typeof initCountdown === 'function' && document.getElementById('countdownWrapper')) initCountdown();
     if (typeof renderFullSchedule === 'function' && document.getElementById('fullScheduleGrid')) renderFullSchedule();
-  } catch(e) {
+    if (typeof renderDriversPage === 'function' && document.getElementById('driversGrid')) renderDriversPage();
+    if (typeof loadDriverPage === 'function' && document.getElementById('driverHeroBg')) loadDriverPage();
+    if (typeof initScrollObserver === 'function') initScrollObserver();
+  } catch (e) {
     console.error("Jolpica override failed", e);
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-   attachJolpicaLayer();
+  attachJolpicaLayer();
 });

@@ -480,7 +480,7 @@
       if (!currentUser) return;
 
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/fantasy/${currentUser.firebase_uid}`);
+        const res = await fetch(`http://127.0.0.1:8000/api/fantasy/${currentUser.user_id}`);
         if (res.ok) {
           const data = await res.json();
           document.getElementById('fantasyBuilderView').style.display = 'none';
@@ -532,7 +532,7 @@
         if (data.status === 'success') {
           let lhtml = '';
           data.leaderboard.forEach((t, i) => {
-            const isMe = t.firebase_uid === currentUser.firebase_uid;
+            const isMe = t.user_id === currentUser.user_id;
             const ownerFirstName = (t.display_name || "Unknown").split(' ')[0];
             lhtml += `
                   <div title="Driver 1: ${t.driver1}\nDriver 2: ${t.driver2}\nTeam: ${t.constructor}" style="cursor:help; display:flex; justify-content:space-between; align-items:center; background:${isMe ? 'rgba(225,6,0,0.2)' : '#111'}; border:1px solid ${isMe ? 'var(--red)' : '#222'}; padding:10px; border-radius:4px; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='${isMe ? 'var(--red)' : '#222'}'">
@@ -629,7 +629,7 @@
 
       let totP = getF1Pts(fDrivers[0]) + getF1Pts(fDrivers[1]) + getF1Pts(fConstructors[0]);
       const payload = {
-        firebase_uid: currentUser.firebase_uid,
+        user_id: currentUser.user_id,
         team_name: tName,
         constructor: fConstructors[0],
         driver1: fDrivers[0],
@@ -794,7 +794,7 @@
       localStorage.setItem('f1_user', JSON.stringify(currentUser));
 
       const payload = {
-        firebase_uid: currentUser.firebase_uid,
+        user_id: currentUser.user_id,
         email: currentUser.email,
         display_name: currentUser.name,
         favorite_team: currentUser.color,
